@@ -1,4 +1,15 @@
 @echo off
+setlocal enabledelayedexpansion
+
+REM Force working directory to the server folder
+set "BASE_DIR=C:\Users\ksbot\Documents\UiPath\GB_PDF_Automation"
+if not exist "%BASE_DIR%" (
+    echo ERROR: Base directory not found: %BASE_DIR%
+    pause
+    exit /b 1
+)
+cd /d "%BASE_DIR%"
+
 echo ========================================
 echo GB PDF Automation - Production Server
 echo ========================================
@@ -67,3 +78,4 @@ echo ========================================
 echo Server stopped.
 echo ========================================
 pause
+endlocal
