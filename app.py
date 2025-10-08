@@ -121,15 +121,29 @@ def health():
 
 @app.post("/process")
 def process_folder():
-    # Check if we're in production mode (file upload) or development mode (folder path)
+    # In production, support BOTH: uploaded files OR a server-reachable folder path
     is_production = os.getenv('ENV') == 'production'
-    
+
     if is_production:
-        # Production mode: handle file uploads
-        return process_uploaded_files()
-    else:
-        # Development mode: handle folder path
-        return process_folder_path()
+        # If files uploaded, process upload flow
+        if 'files' in request.files:
+            files = request.files.getlist('files')
+            if files and any(f.filename for f in files):
+                return process_uploaded_files()
+            # continue to path handling if no files came through
+
+        # Try folder path handling (network/UNC path or server-local path)
+        folder_path = (request.form.get("folder_path") or "").strip()
+        if folder_path and os.path.isdir(folder_path):
+            return _start_folder_processing(folder_path)
+
+        return jsonify({
+            "ok": False,
+            "error": "No files uploaded and folder path is not accessible from the server. Use a network share (e.g., \\\\PC\\Share\\Folder) or use 'Upload Folder'."
+        }), 400
+
+    # Development mode: handle folder path
+    return process_folder_path()
 
 def process_folder_path():
     """Process PDFs from a folder path (development mode)."""
@@ -154,6 +168,9 @@ def process_folder_path():
     except queue.Empty:
         pass
 
+    return _start_folder_processing(folder_path)
+
+def _start_folder_processing(folder_path: str):
     # reset polling snapshot
     with progress_lock:
         progress_state["statuses"] = []
