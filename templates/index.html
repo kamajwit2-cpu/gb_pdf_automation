@@ -731,6 +731,24 @@
                                     </div>
                                 </div>
 
+                                <div class="text-center text-muted my-3">— or —</div>
+
+                                <!-- Directory Upload (client-side folder picker) -->
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-folder-symlink me-1"></i>
+                                        Upload Folder (session-only, not saved on server)
+                                    </label>
+                                    <div>
+                                        <input type="file" id="folderUpload" webkitdirectory directory multiple accept=".pdf" hidden>
+                                        <button type="button" class="btn btn-outline-primary" id="uploadFolderBtn">
+                                            <i class="bi bi-upload me-1"></i>
+                                            Choose Folder and Upload PDFs
+                                        </button>
+                                        <small class="text-muted d-block mt-2">We will process PDFs in memory and delete temporary files after processing.</small>
+                                    </div>
+                                </div>
+
                                 <!-- Recent Paths -->
                                 <div class="mb-4" id="recentPathsSection" style="display: none;">
                                     <label class="form-label">
@@ -977,6 +995,9 @@
                     nextBtn: document.getElementById('nextBtn'),
                     recentPathsSection: document.getElementById('recentPathsSection'),
                     recentPaths: document.getElementById('recentPaths'),
+                    // Upload controls
+                    uploadFolderBtn: document.getElementById('uploadFolderBtn'),
+                    folderUpload: document.getElementById('folderUpload'),
                     
                     // Step 2 elements
                     progressCircle: document.getElementById('progressCircle'),
@@ -1015,6 +1036,9 @@
                 });
                 this.elements.browseBtn.addEventListener('click', () => this.browseFolder());
                 this.elements.folderForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+                // Directory upload flow
+                this.elements.uploadFolderBtn.addEventListener('click', () => this.elements.folderUpload.click());
+                this.elements.folderUpload.addEventListener('change', (e) => this.handleFolderUpload(e));
                 
                 // Step 2 events (processing)
                 
@@ -1104,6 +1128,50 @@
                 } catch (error) {
                     this.showToast(`Error: ${error.message}`, 'danger');
                     this.goToStep(1);
+                }
+            }
+
+            async handleFolderUpload(event) {
+                const files = Array.from(event.target.files || []).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+                if (files.length === 0) {
+                    this.showToast('No PDF files found in the selected folder.', 'warning');
+                    return;
+                }
+
+                try {
+                    this.processingData.startTime = new Date();
+                    this.processingData.totalPdfs = files.length;
+                    this.processingData.processedPdfs = 0;
+                    this.processingData.statuses = [];
+                    this.processingData.rows = [];
+                    this.goToStep(2);
+
+                    // Start SSE connection
+                    this.connectSSE();
+
+                    // Build multipart form data
+                    const formData = new FormData();
+                    for (const file of files) {
+                        formData.append('files', file, file.name);
+                    }
+
+                    const response = await fetch('/process', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.error || 'Failed to start upload processing');
+                    }
+
+                    this.showToast(`Uploading ${files.length} PDF(s). Processing started...`, 'success');
+                } catch (err) {
+                    this.showToast(`Error: ${err.message}`, 'danger');
+                    this.goToStep(1);
+                } finally {
+                    // Reset input to allow re-selecting same folder if needed
+                    this.elements.folderUpload.value = '';
                 }
             }
 

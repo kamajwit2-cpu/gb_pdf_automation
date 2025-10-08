@@ -20,7 +20,8 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 # Configuration for file uploads
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+# Raise limit to allow batch of PDFs in one go (session-only, stored in temp)
+MAX_CONTENT_LENGTH = 512 * 1024 * 1024  # 512MB
 
 # Ensure upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -289,8 +290,7 @@ def events():
     headers = {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        # helpful for some proxies/servers
+        # helpful for some proxies/servers (safe to include; ignored if not applicable)
         "X-Accel-Buffering": "no",
     }
     return Response(stream(), headers=headers)
