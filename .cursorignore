@@ -1,0 +1,27 @@
+# Virtual environments - exclude from codebase indexing
+pdf_extraction_env/
+sap_integration_env/
+venv/
+env/
+.venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Large output directories
+Python Output/
+
+# Log files
+*.log
+dev_rfc.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

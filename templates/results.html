@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Extraction Results</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/tabulator-tables@5.6.2/dist/css/tabulator.min.css" rel="stylesheet">
+  <style>
+    .status-item { display: flex; justify-content: space-between; padding: .375rem 0; border-bottom: 1px dashed #e9ecef; font-size: .925rem; }
+    .ok { color: #198754; font-weight: 600; }
+    .fail { color: #dc3545; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">Extraction Results</h4>
+      <a class="btn btn-secondary btn-sm" href="/">Back</a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="text-muted small">Folder</div>
+            <code class="bg-light p-2 rounded d-inline-block">{{ folder_path }}</code>
+          </div>
+          <div>
+            <span class="badge bg-primary">PDFs: {{ statuses|length }}</span>
+            <span class="badge bg-success ms-2">Rows: {{ rows|length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="card-title mb-3">Per-PDF Status</h6>
+            <div class="overflow-auto" style="max-height: 360px;">
+              {% for s in statuses %}
+              <div class="status-item">
+                <div class="text-truncate" style="max-width: 70%" title="{{ s['file'] }}">{{ s['file'] }}</div>
+                {% if s['ok'] %}
+                <div class="ok">OK ({{ s['items'] if 'items' in s else 0 }})</div>
+                {% else %}
+                <div class="fail">FAIL{% if 'error' in s %} ({{ s['error'] }}){% endif %}</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+              <h6 class="card-title mb-0">Extracted Table (Editable)</h6>
+              <div class="d-flex gap-2">
+                <button id="addRowBtn" class="btn btn-outline-primary btn-sm" type="button">Add Row</button>
+                <button id="delRowBtn" class="btn btn-outline-danger btn-sm" type="button">Delete Selected</button>
+                <button id="clearFiltersBtn" class="btn btn-outline-secondary btn-sm" type="button">Clear Filters</button>
+                <button id="exportBtn" class="btn btn-success btn-sm" type="button">Export to Excel</button>
+              </div>
+            </div>
+            <div id="table" style="min-height:520px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/tabulator-tables@5.6.2/dist/js/tabulator.min.js"></script>
+  <script>
+    const exportBtn = document.getElementById('exportBtn');
+    const addRowBtn = document.getElementById('addRowBtn');
+    const delRowBtn = document.getElementById('delRowBtn');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    let table = null;
+    const initialRows = {{ rows | tojson }};
+
+    function ensureTable(columns, rows) {
+      if (window.Tabulator) {
+        if (!table) {
+          table = new Tabulator('#table', {
+            height: 520,
+            layout: 'fitDataStretch',
+            columns,
+            movableColumns: true,
+            selectable: true,
+          });
+        } else {
+          table.setColumns(columns);
+        }
+        table.setData(rows || []);
+      } else {
+        // Fallback simple table
+        const container = document.getElementById('table');
+        container.innerHTML = '';
+        const tbl = document.createElement('table');
+        tbl.className = 'table table-sm table-bordered';
+        const thead = document.createElement('thead');
+        const trh = document.createElement('tr');
+        for (const col of columns) {
+          const th = document.createElement('th');
+          th.textContent = col.title;
+          trh.appendChild(th);
+        }
+        thead.appendChild(trh);
+        const tbody = document.createElement('tbody');
+        for (const row of rows || []) {
+          const tr = document.createElement('tr');
+          for (const col of columns) {
+            const td = document.createElement('td');
+            td.contentEditable = 'true';
+            td.textContent = row[col.field] ?? '';
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        }
+        tbl.appendChild(thead);
+        tbl.appendChild(tbody);
+        container.appendChild(tbl);
+      }
+    }
+
+    function initTable() {
+      if (!initialRows || initialRows.length === 0) {
+        // create empty table with a basic column to allow adding rows
+        ensureTable([{ title: 'Kama SKU', field: 'Kama SKU', editor: 'input' }], []);
+        return;
+      }
+      const columns = Object.keys(initialRows[0]).map(k => ({ title: k, field: k, editor: 'input', headerFilter: 'input' }));
+      ensureTable(columns, initialRows);
+    }
+
+    exportBtn.addEventListener('click', async () => {
+      const data = table ? table.getData('active') : initialRows;
+      try {
+        const res = await fetch('/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows: data })
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j.error || `HTTP ${res.status}`);
+        }
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'edited_data.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        alert(e.message || 'Export failed');
+      }
+    });
+
+    addRowBtn.addEventListener('click', () => {
+      if (table) {
+        table.addRow({});
+      } else {
+        const container = document.getElementById('table');
+        const tbl = container.querySelector('table');
+        if (!tbl) return;
+        const headers = Array.from(tbl.querySelectorAll('thead th')).map(th => th.textContent.trim());
+        const tr = document.createElement('tr');
+        for (const _ of headers) {
+          const td = document.createElement('td');
+          td.contentEditable = 'true';
+          tr.appendChild(td);
+        }
+        tbl.querySelector('tbody').appendChild(tr);
+      }
+    });
+
+    delRowBtn.addEventListener('click', () => {
+      if (table) {
+        const selected = table.getSelectedRows();
+        selected.forEach(r => r.delete());
+      } else {
+        const container = document.getElementById('table');
+        const tbl = container.querySelector('table');
+        if (!tbl) return;
+        const tb = tbl.querySelector('tbody');
+        if (tb.lastElementChild) tb.removeChild(tb.lastElementChild);
+      }
+    });
+
+    clearFiltersBtn.addEventListener('click', () => {
+      if (table) table.clearHeaderFilter();
+    });
+
+    initTable();
+  </script>
+</body>
+</html>

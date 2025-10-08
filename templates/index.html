@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Extraction Wizard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+            --light-bg: #f8f9fa;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem 0;
+        }
+
+        .wizard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .wizard-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .wizard-header {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .wizard-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .wizard-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin: 0.25rem 0 0 0;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #dee2e6;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--success-color) 100%);
+            opacity: 0.1;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 2rem;
+            position: relative;
+            min-width: 120px;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -2rem;
+            top: 1.5rem;
+            width: 4rem;
+            height: 3px;
+            background: linear-gradient(90deg, #dee2e6 0%, #e9ecef 100%);
+            border-radius: 2px;
+            z-index: 1;
+            transition: all 0.4s ease;
+        }
+
+        .step.active:not(:last-child)::after {
+            background: linear-gradient(90deg, var(--primary-color) 0%, #0056b3 100%);
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+        }
+
+        .step.completed:not(:last-child)::after {
+            background: linear-gradient(90deg, var(--success-color) 0%, #146c43 100%);
+        }
+
+        .step-number {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.4s ease;
+            border: 3px solid transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-number::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .step.active .step-number {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .step.active .step-number::before {
+            opacity: 1;
+        }
+
+        .step.completed .step-number {
+            background: linear-gradient(135deg, var(--success-color) 0%, #146c43 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.4);
+        }
+
+        .step.completed .step-number::after {
+            content: '✓';
+            position: absolute;
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+
+        .step-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.875rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-top: 0.25rem;
+        }
+
+        .step.active .step-label {
+            color: var(--primary-color);
+            font-weight: 700;
+            transform: translateY(-2px);
+        }
+
+        .step.completed .step-label {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .step-description {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 0.25rem;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-description {
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        .step.completed .step-description {
+            color: var(--success-color);
+            opacity: 0.9;
+        }
+
+        .wizard-content {
+            padding: 1.5rem;
+            min-height: 400px;
+        }
+
+        .card-header {
+            padding: 0.75rem 1rem;
+        }
+
+        .card-header h5,
+        .card-header h6 {
+            margin-bottom: 0;
+            font-size: 1rem;
+        }
+
+        .card-header h6 {
+            font-size: 0.875rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .step-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn {
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-lg {
+            padding: 0.625rem 1.25rem;
+            font-size: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background: #146c43;
+            border-color: #146c43;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .progress-ring {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .progress-ring .background {
+            stroke: #e9ecef;
+        }
+
+        .progress-ring .progress {
+            stroke: var(--primary-color);
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .status-feed {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background: white;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-icon.spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .status-filename {
+            flex: 1;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .status-result {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-result.success {
+            color: var(--success-color);
+        }
+
+        .status-result.error {
+            color: var(--danger-color);
+        }
+
+        .status-item-failed {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 3px solid var(--danger-color);
+        }
+
+        .status-item-failed:hover {
+            background-color: rgba(220, 53, 69, 0.15);
+        }
+
+        /* Failed PDFs toggle styling */
+        #failedPdfsToggleIcon {
+            transition: transform 0.3s ease;
+        }
+
+        #failedPdfsContent {
+            transition: all 0.3s ease;
+        }
+
+        .card-header[onclick] {
+            transition: background-color 0.2s ease;
+        }
+
+        .card-header[onclick]:hover {
+            background-color: rgba(255, 193, 7, 0.1) !important;
+        }
+
+        .table-responsive {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            max-height: 500px;
+            overflow: auto;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: var(--light-bg);
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 11;
+            background: var(--light-bg);
+        }
+
+        .table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 9;
+            background: white;
+        }
+
+        .table tbody tr:hover td:first-child {
+            background: #f8f9fa;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .table tbody tr:hover td:first-child {
+            background: #f8f9fa;
+        }
+
+        .editable-cell {
+            min-width: 100px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Ensure proper scrolling behavior */
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .editable-cell:focus {
+            background-color: #fff3cd;
+            outline: none;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, var(--success-color), #146c43);
+            color: white;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-stat {
+            text-align: center;
+            padding: 0.25rem;
+        }
+
+        .summary-stat .number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .summary-stat .label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            line-height: 1.1;
+            margin-top: 0.125rem;
+        }
+
+        /* Responsive summary adjustments */
+        @media (max-width: 576px) {
+            .summary-card {
+                padding: 0.5rem;
+            }
+            
+            .summary-stat {
+                padding: 0.125rem;
+            }
+            
+            .summary-stat .number {
+                font-size: 1.1rem;
+            }
+            
+            .summary-stat .label {
+                font-size: 0.65rem;
+            }
+        }
+
+        .recent-paths {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .recent-path-item {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .recent-path-item:hover {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .validation-feedback {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .validation-feedback.show {
+            display: block;
+        }
+
+        .validation-feedback.valid {
+            color: var(--success-color);
+        }
+
+        .validation-feedback.invalid {
+            color: var(--danger-color);
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0;
+            }
+            
+            .wizard-content {
+                padding: 1rem;
+            }
+            
+            .step-indicator {
+                padding: 1rem 0.5rem;
+            }
+            
+            .step {
+                margin: 0 0.75rem;
+                min-width: 80px;
+            }
+            
+            .step:not(:last-child)::after {
+                right: -1.5rem;
+                width: 1.5rem;
+            }
+            
+            .step-number {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1rem;
+            }
+            
+            .step-label {
+                font-size: 0.75rem;
+            }
+            
+            .step-description {
+                font-size: 0.65rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .step {
+                margin: 0 0.5rem;
+                min-width: 60px;
+            }
+            
+            .step:not(:last-child)::after {
+                right: -1rem;
+                width: 1rem;
+            }
+            
+            .step-number {
+                width: 2rem;
+                height: 2rem;
+                font-size: 0.875rem;
+            }
+            
+            .step-label {
+                font-size: 0.7rem;
+            }
+            
+            .step-description {
+                display: none;
+            }
+        }
+
+        /* Responsive layout for summary and failed PDFs */
+        @media (max-width: 768px) {
+            .col-lg-8, .col-lg-4 {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard-container">
+        <div class="wizard-card">
+            <!-- Header -->
+            <div class="wizard-header">
+                <h1 class="wizard-title">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>
+                    PDF Extraction Wizard
+                </h1>
+                <p class="wizard-subtitle">Extract data from PDF files with live progress tracking</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Input</div>
+                    <div class="step-description">Select folder</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Processing</div>
+                    <div class="step-description">Extract data</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Results</div>
+                    <div class="step-description">View & export</div>
+                </div>
+            </div>
+
+            <!-- Wizard Content -->
+            <div class="wizard-content">
+                <!-- Step 1: Input & Validation -->
+                <div class="step-content active" id="step1">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="text-center mb-4">
+                                <i class="bi bi-folder2-open text-primary" style="font-size: 3rem;"></i>
+                                <h3 class="mt-3">Select PDF Folder</h3>
+                                <p class="text-muted">Choose the folder containing PDF files to extract data from</p>
+                            </div>
+
+                            <form id="folderForm" class="needs-validation" novalidate>
+                                <div class="mb-3">
+                                    <label for="folderPath" class="form-label">
+                                        <i class="bi bi-folder me-1"></i>
+                                        Folder Path
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="folderPath" name="folder_path" 
+                                               placeholder="e.g. C:\path\to\Mail Download or \\remote\share\folder" 
+                                               required>
+                                        <button class="btn btn-outline-secondary" type="button" id="browseBtn">
+                                            <i class="bi bi-folder2-open me-1"></i>
+                                            Browse
+                                        </button>
+                                    </div>
+                                    <div class="validation-feedback" id="pathValidation">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        <span id="validationText">Path is valid</span>
+                                    </div>
+                                </div>
+
+                                <!-- Recent Paths -->
+                                <div class="mb-4" id="recentPathsSection" style="display: none;">
+                                    <label class="form-label">
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        Recent Paths
+                                    </label>
+                                    <div class="recent-paths border rounded p-2" id="recentPaths">
+                                        <!-- Recent paths will be populated here -->
+                                    </div>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="nextBtn" disabled>
+                                        <i class="bi bi-arrow-right me-2"></i>
+                                        Start Processing
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Live Processing with Progress -->
+                <div class="step-content" id="step2">
+                    <div class="text-center mb-4">
+                        <div class="progress-ring">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="background" cx="50" cy="50" r="40"></circle>
+                                <circle class="progress" cx="50" cy="50" r="40" id="progressCircle"></circle>
+                            </svg>
+                        </div>
+                        <h3 id="processingTitle">Processing PDFs...</h3>
+                        <p class="text-muted" id="processingSubtitle">Extracting data from your PDF files</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-list-ul me-2"></i>
+                                        Processing Status
+                                    </h5>
+                                    <span class="badge bg-primary" id="progressBadge">0 / 0</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="status-feed" id="statusFeed">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="bi bi-hourglass-split me-2"></i>
+                                            Waiting for processing to start...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Processing Info
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Current File:</small>
+                                        <div class="fw-bold text-truncate" id="currentFile">-</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Total Items:</small>
+                                        <div class="fw-bold" id="totalItems">0</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Duration:</small>
+                                        <div class="fw-bold" id="processingDuration">00:00</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Status:</small>
+                                        <div class="fw-bold">
+                                            <span class="badge bg-warning" id="processingStatus">Starting...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Results & Export -->
+                <div class="step-content" id="step3">
+                    <!-- Combined Summary and Failed PDFs Section -->
+                    <div class="row mb-3">
+                        <!-- Summary Section -->
+                        <div class="col-lg-8">
+                            <div class="summary-card">
+                                <div class="row text-center g-2">
+                                    <div class="col-3">
+                                        <div class="summary-stat">
+                                            <span class="number" id="summaryPdfs">0</span>
+                                            <span class="label">PDFs</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="summary-stat">
+                                            <span class="number" id="summaryRows">0</span>
+                                            <span class="label">Rows</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="summary-stat">
+                                            <span class="number" id="summarySuccess">0</span>
+                                            <span class="label">Success</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="summary-stat">
+                                            <span class="number" id="summaryDuration">00:00</span>
+                                            <span class="label">Time</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Failed PDFs Section -->
+                        <div class="col-lg-4">
+                            <div class="card h-100" id="failedPdfsCard" style="display: none;">
+                                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="wizard.toggleFailedPdfs()">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Failed PDFs
+                                    </h6>
+                                    <i class="bi bi-chevron-down" id="failedPdfsToggleIcon"></i>
+                                </div>
+                                <div class="card-body" id="failedPdfsContent" style="display: none;">
+                                    <div class="list-group" id="failedPdfsList" style="max-height: 200px; overflow-y: auto;">
+                                        <!-- Failed PDFs will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-table me-2"></i>
+                                Extracted Data (Editable)
+                            </h5>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="addRowBtn">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Add Row
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" id="delRowBtn">
+                                    <i class="bi bi-trash me-1"></i>
+                                    Delete Selected
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn">
+                                    <i class="bi bi-funnel me-1"></i>
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-hover mb-0" id="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px; min-width: 50px;">
+                                                <input type="checkbox" id="selectAll" />
+                                            </th>
+                                            <!-- Headers will be populated dynamically -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="20" class="text-center text-muted py-4">
+                                                <i class="bi bi-inbox me-2"></i>
+                                                No data to display. Complete processing to see results.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-success btn-lg me-3" id="exportBtn" disabled>
+                            <i class="bi bi-download me-2"></i>
+                            Export to Excel
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-lg" id="startNewBtn">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            Start New
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class PDFExtractionWizard {
+            constructor() {
+                this.currentStep = 1;
+                this.totalSteps = 3;
+                this.processingData = {
+                    totalPdfs: 0,
+                    processedPdfs: 0,
+                    totalItems: 0,
+                    startTime: null,
+                    statuses: [],
+                    rows: []
+                };
+                this.eventSource = null;
+                this.recentPaths = this.loadRecentPaths();
+                
+                this.initializeElements();
+                this.attachEventListeners();
+                this.updateStepIndicator();
+                this.updateRecentPaths();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    // Step elements
+                    steps: document.querySelectorAll('.step'),
+                    stepContents: document.querySelectorAll('.step-content'),
+                    
+                    // Step 1 elements
+                    folderForm: document.getElementById('folderForm'),
+                    folderPath: document.getElementById('folderPath'),
+                    browseBtn: document.getElementById('browseBtn'),
+                    pathValidation: document.getElementById('pathValidation'),
+                    validationText: document.getElementById('validationText'),
+                    nextBtn: document.getElementById('nextBtn'),
+                    recentPathsSection: document.getElementById('recentPathsSection'),
+                    recentPaths: document.getElementById('recentPaths'),
+                    
+                    // Step 2 elements
+                    progressCircle: document.getElementById('progressCircle'),
+                    processingTitle: document.getElementById('processingTitle'),
+                    processingSubtitle: document.getElementById('processingSubtitle'),
+                    progressBadge: document.getElementById('progressBadge'),
+                    statusFeed: document.getElementById('statusFeed'),
+                    currentFile: document.getElementById('currentFile'),
+                    totalItems: document.getElementById('totalItems'),
+                    processingDuration: document.getElementById('processingDuration'),
+                    processingStatus: document.getElementById('processingStatus'),
+                    
+                    // Step 3 elements
+                    summaryPdfs: document.getElementById('summaryPdfs'),
+                    summaryRows: document.getElementById('summaryRows'),
+                    summarySuccess: document.getElementById('summarySuccess'),
+                    summaryDuration: document.getElementById('summaryDuration'),
+                    dataTable: document.getElementById('dataTable'),
+                    selectAll: document.getElementById('selectAll'),
+                    addRowBtn: document.getElementById('addRowBtn'),
+                    delRowBtn: document.getElementById('delRowBtn'),
+                    clearFiltersBtn: document.getElementById('clearFiltersBtn'),
+                    exportBtn: document.getElementById('exportBtn'),
+                    startNewBtn: document.getElementById('startNewBtn')
+                };
+            }
+
+            attachEventListeners() {
+                // Step 1 events
+                this.elements.folderPath.addEventListener('input', () => this.validatePath());
+                this.elements.folderPath.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.elements.folderForm.dispatchEvent(new Event('submit'));
+                    }
+                });
+                this.elements.browseBtn.addEventListener('click', () => this.browseFolder());
+                this.elements.folderForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+                
+                // Step 2 events (processing)
+                
+                // Step 3 events
+                this.elements.selectAll.addEventListener('change', (e) => this.toggleSelectAll(e.target.checked));
+                this.elements.addRowBtn.addEventListener('click', () => this.addRow());
+                this.elements.delRowBtn.addEventListener('click', () => this.deleteSelectedRows());
+                this.elements.clearFiltersBtn.addEventListener('click', () => this.clearFilters());
+                this.elements.exportBtn.addEventListener('click', () => this.exportToExcel());
+                this.elements.startNewBtn.addEventListener('click', () => this.startNew());
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            validatePath() {
+                const path = this.elements.folderPath.value.trim();
+                const validation = this.elements.pathValidation;
+                const text = this.elements.validationText;
+                
+                if (!path) {
+                    validation.className = 'validation-feedback';
+                    this.elements.nextBtn.disabled = true;
+                    return false;
+                }
+                
+                // Basic validation - check if path looks valid
+                const isValid = path.length > 3 && (path.includes('\\') || path.includes('/'));
+                
+                if (isValid) {
+                    validation.className = 'validation-feedback show valid';
+                    text.innerHTML = '<i class="bi bi-check-circle me-1"></i>Path format looks valid';
+                    this.elements.nextBtn.disabled = false;
+                } else {
+                    validation.className = 'validation-feedback show invalid';
+                    text.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Please enter a valid folder path';
+                    this.elements.nextBtn.disabled = true;
+                }
+                
+                return isValid;
+            }
+
+            browseFolder() {
+                // Note: File API doesn't support folder selection in all browsers
+                // This is a placeholder for future enhancement
+                this.showToast('Folder browsing is not supported in this browser. Please enter the path manually.', 'info');
+            }
+
+            async handleFormSubmit(e) {
+                e.preventDefault();
+                
+                if (!this.validatePath()) {
+                    return;
+                }
+                
+                const folderPath = this.elements.folderPath.value.trim();
+                this.saveRecentPath(folderPath);
+                
+                // Start processing
+                await this.startProcessing(folderPath);
+            }
+
+            async startProcessing(folderPath) {
+                try {
+                    this.processingData.startTime = new Date();
+                    this.goToStep(2);
+                    
+                    // Start SSE connection
+                    this.connectSSE();
+                    
+                    // Send processing request
+                    const formData = new FormData();
+                    formData.append('folder_path', folderPath);
+                    
+                    const response = await fetch('/process', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Failed to start processing');
+                    }
+                    
+                    this.showToast('Processing started successfully!', 'success');
+                    
+                } catch (error) {
+                    this.showToast(`Error: ${error.message}`, 'danger');
+                    this.goToStep(1);
+                }
+            }
+
+            connectSSE() {
+                if (this.eventSource) {
+                    this.eventSource.close();
+                }
+                
+                this.eventSource = new EventSource('/events');
+                
+                this.eventSource.onopen = () => {
+                    console.log('SSE connection opened');
+                };
+                
+                this.eventSource.onmessage = (event) => {
+                    console.log('SSE message:', event.data);
+                };
+                
+                this.eventSource.addEventListener('hello', (event) => {
+                    console.log('SSE hello:', event.data);
+                });
+                
+                this.eventSource.addEventListener('pdf_status', (event) => {
+                    const data = JSON.parse(event.data);
+                    this.updatePDFStatus(data);
+                });
+                
+                this.eventSource.addEventListener('complete', (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleProcessingComplete(data);
+                });
+                
+                this.eventSource.addEventListener('error', (event) => {
+                    const data = JSON.parse(event.data);
+                    this.showToast(`Processing error: ${data.message}`, 'danger');
+                });
+                
+                this.eventSource.onerror = (error) => {
+                    console.error('SSE error:', error);
+                    this.showToast('Connection lost. Trying polling fallback...', 'warning');
+                    this.startPolling();
+                };
+            }
+
+            startPolling() {
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const response = await fetch('/progress');
+                        const data = await response.json();
+                        
+                        if (!data.running && data.statuses.length > 0) {
+                            clearInterval(pollInterval);
+                            this.handleProcessingComplete({ rows: data.rows });
+                        } else if (data.running) {
+                            // Update statuses
+                            data.statuses.forEach(status => {
+                                if (!this.processingData.statuses.find(s => s.file === status.file)) {
+                                    this.updatePDFStatus(status);
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Polling error:', error);
+                    }
+                }, 1000);
+            }
+
+            updatePDFStatus(status) {
+                this.processingData.statuses.push(status);
+                
+                if (status.ok) {
+                    this.processingData.totalItems += status.items || 0;
+                }
+                
+                this.processingData.processedPdfs++;
+                this.updateProgress();
+                this.updateStatusFeed(status);
+                this.updateCurrentFile(status.file);
+            }
+
+            updateProgress() {
+                const { processedPdfs, totalPdfs } = this.processingData;
+                const progress = totalPdfs > 0 ? (processedPdfs / totalPdfs) * 100 : 0;
+                
+                // Update progress circle
+                const circumference = 2 * Math.PI * 40;
+                const offset = circumference - (progress / 100) * circumference;
+                this.elements.progressCircle.style.strokeDashoffset = offset;
+                
+                // Update progress badge
+                this.elements.progressBadge.textContent = `${processedPdfs} / ${totalPdfs}`;
+                
+                // Update processing info
+                this.elements.totalItems.textContent = this.processingData.totalItems;
+                this.updateProcessingDuration();
+            }
+
+            updateStatusFeed(status) {
+                const statusItem = document.createElement('div');
+                statusItem.className = `status-item ${!status.ok ? 'status-item-failed' : ''}`;
+                
+                const iconClass = status.ok ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger';
+                const resultClass = status.ok ? 'success' : 'error';
+                const resultText = status.ok ? `OK (${status.items || 0} items)` : `FAIL${status.error ? ': ' + status.error : ''}`;
+                
+                statusItem.innerHTML = `
+                    <div class="status-icon">
+                        <i class="bi ${iconClass}"></i>
+                    </div>
+                    <div class="status-filename" title="${status.file}">${status.file}</div>
+                    <div class="status-result ${resultClass}">${resultText}</div>
+                `;
+                
+                // Remove the "waiting" message if it exists
+                const waitingMsg = this.elements.statusFeed.querySelector('.text-center');
+                if (waitingMsg) {
+                    waitingMsg.remove();
+                }
+                
+                this.elements.statusFeed.appendChild(statusItem);
+                this.elements.statusFeed.scrollTop = this.elements.statusFeed.scrollHeight;
+            }
+
+            updateCurrentFile(filename) {
+                this.elements.currentFile.textContent = filename || '-';
+            }
+
+            updateProcessingDuration() {
+                if (!this.processingData.startTime) return;
+                
+                const now = new Date();
+                const duration = Math.floor((now - this.processingData.startTime) / 1000);
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                
+                this.elements.processingDuration.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            handleProcessingComplete(data) {
+                this.processingData.rows = data.rows || [];
+                
+                // Close SSE connection
+                if (this.eventSource) {
+                    this.eventSource.close();
+                    this.eventSource = null;
+                }
+                
+                // Check for failed PDFs
+                const failedPdfs = this.processingData.statuses.filter(s => !s.ok);
+                const hasFailures = failedPdfs.length > 0;
+                
+                // Update processing status
+                if (hasFailures) {
+                    this.elements.processingStatus.innerHTML = '<span class="badge bg-warning">Completed with Errors</span>';
+                    this.elements.processingTitle.textContent = 'Processing Completed with Errors';
+                    this.elements.processingSubtitle.textContent = `${failedPdfs.length} PDF(s) failed to process`;
+                } else {
+                    this.elements.processingStatus.innerHTML = '<span class="badge bg-success">Completed</span>';
+                    this.elements.processingTitle.textContent = 'Processing Complete!';
+                    this.elements.processingSubtitle.textContent = 'Data extraction finished successfully';
+                }
+                
+                // Update summary
+                this.updateSummary();
+                
+                // Render table
+                this.renderTable();
+                
+                // Go to results step
+                setTimeout(() => {
+                    this.goToStep(3);
+                }, 1000);
+                
+                if (hasFailures) {
+                    this.showToast(`Processing completed with ${failedPdfs.length} failed PDF(s). Check the results page for details.`, 'warning');
+                } else {
+                    this.showToast('Processing completed successfully!', 'success');
+                }
+            }
+
+
+            updateSummary() {
+                const { statuses, rows, startTime } = this.processingData;
+                const successful = statuses.filter(s => s.ok).length;
+                const duration = startTime ? Math.floor((new Date() - startTime) / 1000) : 0;
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                
+                this.elements.summaryPdfs.textContent = statuses.length;
+                this.elements.summaryRows.textContent = rows.length;
+                this.elements.summarySuccess.textContent = successful;
+                this.elements.summaryDuration.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            renderTable() {
+                const { rows, statuses } = this.processingData;
+                const tbody = this.elements.dataTable.querySelector('tbody');
+                const thead = this.elements.dataTable.querySelector('thead tr');
+                
+                // Show/hide failed PDFs section
+                const failedPdfs = statuses.filter(s => !s.ok);
+                const failedPdfsCard = document.getElementById('failedPdfsCard');
+                const failedPdfsList = document.getElementById('failedPdfsList');
+                
+                if (failedPdfs.length > 0) {
+                    failedPdfsCard.style.display = 'block';
+                    failedPdfsList.innerHTML = failedPdfs.map(pdf => `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">${pdf.file}</div>
+                                <small class="text-muted">${pdf.error || 'Unknown error'}</small>
+                            </div>
+                            <span class="badge bg-danger">Failed</span>
+                        </div>
+                    `).join('');
+                    
+                    // Set up custom toggle
+                    this.setupFailedPdfsToggle();
+                } else {
+                    failedPdfsCard.style.display = 'none';
+                }
+                
+                if (!rows || rows.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="20" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox me-2"></i>
+                                No data to display.
+                            </td>
+                        </tr>
+                    `;
+                    this.elements.exportBtn.disabled = true;
+                    return;
+                }
+                
+                // Clear and rebuild headers
+                thead.innerHTML = '<th style="width: 50px; min-width: 50px;"><input type="checkbox" id="selectAll" /></th>';
+                const headers = Object.keys(rows[0]);
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    th.title = header;
+                    thead.appendChild(th);
+                });
+                
+                // Clear and rebuild rows
+                tbody.innerHTML = '';
+                rows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    
+                    // Add checkbox cell
+                    const selectTd = document.createElement('td');
+                    const selectCheckbox = document.createElement('input');
+                    selectCheckbox.type = 'checkbox';
+                    selectCheckbox.className = 'row-select';
+                    selectTd.appendChild(selectCheckbox);
+                    tr.appendChild(selectTd);
+                    
+                    // Add data cells
+                    headers.forEach(header => {
+                        const td = document.createElement('td');
+                        td.contentEditable = 'true';
+                        td.className = 'editable-cell';
+                        td.textContent = rowData[header] || '';
+                        td.title = rowData[header] || '';
+                        tr.appendChild(td);
+                    });
+                    
+                    tbody.appendChild(tr);
+                });
+                
+                this.elements.exportBtn.disabled = false;
+            }
+
+            toggleSelectAll(checked) {
+                const checkboxes = this.elements.dataTable.querySelectorAll('.row-select');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = checked;
+                });
+            }
+
+            addRow() {
+                const tbody = this.elements.dataTable.querySelector('tbody');
+                const headers = Array.from(this.elements.dataTable.querySelectorAll('thead th')).slice(1);
+                
+                const newRow = document.createElement('tr');
+                
+                // Add checkbox cell
+                const selectTd = document.createElement('td');
+                const selectCheckbox = document.createElement('input');
+                selectCheckbox.type = 'checkbox';
+                selectCheckbox.className = 'row-select';
+                selectTd.appendChild(selectCheckbox);
+                newRow.appendChild(selectTd);
+                
+                // Add empty data cells
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.contentEditable = 'true';
+                    td.className = 'editable-cell';
+                    td.textContent = '';
+                    newRow.appendChild(td);
+                });
+                
+                tbody.appendChild(newRow);
+                this.elements.exportBtn.disabled = false;
+            }
+
+            deleteSelectedRows() {
+                const selectedRows = Array.from(this.elements.dataTable.querySelectorAll('.row-select:checked'))
+                    .map(cb => cb.closest('tr'));
+                
+                if (selectedRows.length === 0) {
+                    this.showToast('Please select rows to delete.', 'warning');
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to delete ${selectedRows.length} selected row(s)?`)) {
+                    selectedRows.forEach(row => row.remove());
+                    this.elements.selectAll.checked = false;
+                    this.elements.exportBtn.disabled = false;
+                }
+            }
+
+            clearFilters() {
+                // For native HTML table, this just ensures all rows are visible
+                const rows = this.elements.dataTable.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+                this.showToast('Filters cleared.', 'info');
+            }
+
+            async exportToExcel() {
+                try {
+                    const rows = this.getCurrentRows();
+                    
+                    const response = await fetch('/export', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ rows })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Export failed');
+                    }
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'extracted_data.xlsx';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    
+                    this.showToast('Data exported successfully!', 'success');
+                    
+                } catch (error) {
+                    this.showToast(`Export failed: ${error.message}`, 'danger');
+                }
+            }
+
+            getCurrentRows() {
+                const rows = [];
+                const headerCells = Array.from(this.elements.dataTable.querySelectorAll('thead th')).slice(1);
+                const headers = headerCells.map(th => th.textContent.trim());
+                
+                this.elements.dataTable.querySelectorAll('tbody tr').forEach(tr => {
+                    const rowData = {};
+                    const cells = Array.from(tr.querySelectorAll('td.editable-cell'));
+                    
+                    if (cells.length > 0) {
+                        headers.forEach((header, index) => {
+                            rowData[header] = cells[index]?.textContent.trim() || '';
+                        });
+                        rows.push(rowData);
+                    }
+                });
+                
+                return rows;
+            }
+
+            startNew() {
+                // Reset wizard state
+                this.currentStep = 1;
+                this.processingData = {
+                    totalPdfs: 0,
+                    processedPdfs: 0,
+                    totalItems: 0,
+                    startTime: null,
+                    statuses: [],
+                    rows: []
+                };
+                
+                // Clear form
+                this.elements.folderPath.value = '';
+                this.elements.nextBtn.disabled = true;
+                
+                // Clear validation
+                this.elements.pathValidation.className = 'validation-feedback';
+                
+                // Go to step 1
+                this.goToStep(1);
+                
+                this.showToast('Ready for new extraction!', 'info');
+            }
+
+            goToStep(step) {
+                if (step < 1 || step > this.totalSteps) return;
+                
+                this.currentStep = step;
+                
+                // Update step indicators
+                this.elements.steps.forEach((stepEl, index) => {
+                    const stepNumber = index + 1;
+                    stepEl.classList.remove('active', 'completed');
+                    
+                    if (stepNumber === step) {
+                        stepEl.classList.add('active');
+                    } else if (stepNumber < step) {
+                        stepEl.classList.add('completed');
+                    }
+                });
+                
+                // Update step content
+                this.elements.stepContents.forEach((content, index) => {
+                    content.classList.remove('active');
+                    if (index + 1 === step) {
+                        content.classList.add('active');
+                    }
+                });
+            }
+
+            updateStepIndicator() {
+                this.goToStep(this.currentStep);
+            }
+
+            loadRecentPaths() {
+                try {
+                    return JSON.parse(localStorage.getItem('pdfExtractionRecentPaths') || '[]');
+                } catch {
+                    return [];
+                }
+            }
+
+            saveRecentPath(path) {
+                if (!path || this.recentPaths.includes(path)) return;
+                
+                this.recentPaths.unshift(path);
+                this.recentPaths = this.recentPaths.slice(0, 5); // Keep only 5 recent paths
+                
+                localStorage.setItem('pdfExtractionRecentPaths', JSON.stringify(this.recentPaths));
+                this.updateRecentPaths();
+            }
+
+            updateRecentPaths() {
+                if (this.recentPaths.length === 0) {
+                    this.elements.recentPathsSection.style.display = 'none';
+                    return;
+                }
+                
+                this.elements.recentPathsSection.style.display = 'block';
+                this.elements.recentPaths.innerHTML = '';
+                
+                this.recentPaths.forEach(path => {
+                    const item = document.createElement('div');
+                    item.className = 'recent-path-item';
+                    item.textContent = path;
+                    item.title = path;
+                    item.addEventListener('click', () => {
+                        this.elements.folderPath.value = path;
+                        this.validatePath();
+                    });
+                    this.elements.recentPaths.appendChild(item);
+                });
+            }
+
+            handleKeyboard(e) {
+                if (e.key === 'Escape' && this.currentStep === 2) {
+                    if (confirm('Are you sure you want to cancel processing?')) {
+                        this.startNew();
+                    }
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.querySelector('.toast-container');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHTML = `
+                    <div class="toast" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="bi bi-${this.getToastIcon(type)} text-${type} me-2"></i>
+                            <strong class="me-auto">PDF Extraction</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+                
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+                toast.show();
+                
+                // Remove toast element after it's hidden
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+
+            getToastIcon(type) {
+                const icons = {
+                    'success': 'check-circle',
+                    'danger': 'exclamation-triangle',
+                    'warning': 'exclamation-triangle',
+                    'info': 'info-circle'
+                };
+                return icons[type] || 'info-circle';
+            }
+
+            setupFailedPdfsToggle() {
+                // Store reference to wizard for onclick handler
+                window.wizard = this;
+            }
+
+            toggleFailedPdfs() {
+                const content = document.getElementById('failedPdfsContent');
+                const icon = document.getElementById('failedPdfsToggleIcon');
+                
+                if (content && icon) {
+                    if (content.style.display === 'none') {
+                        // Show content
+                        content.style.display = 'block';
+                        icon.className = 'bi bi-chevron-up';
+                    } else {
+                        // Hide content
+                        content.style.display = 'none';
+                        icon.className = 'bi bi-chevron-down';
+                    }
+                }
+            }
+        }
+
+        // Initialize wizard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new PDFExtractionWizard();
+        });
+    </script>
+</body>
+</html>

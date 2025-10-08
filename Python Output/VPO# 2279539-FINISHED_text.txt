@@ -1,0 +1,49 @@
+EXTRACTED TEXT FROM: VPO# 2279539-FINISHED.pdf
+================================================================================
+
+Gold Price Date
+Unique Designs (Lab Grown)
+PURCHASE ORDER
+425 Meadowland Parkway,, 2nd Floor
+PO # : 2279539
+Secaucus, NJ07094
+Date : Oct/07/2025
+Tel: 212-840-9701 Fax: 212-490-1832 VPO : 2279539 - 189954422
+Date Oct/06/2025
+Purchase From : LG-K003
+Vendor # LG-K003
+RQ
+Gold Lock 3,949.45
+Kama Jewelry Pvt Ltd
+Vendor PO # 189954422
+Silver Lock 48.57
+Unit 2 601-604, Multistoreied Building
+Seepz-Sez Platinum Lock 1,620.00
+RL
+Customer # LG-M106
+Andheri, Mumbai MH 400096 Palladium Lock 1,286.00
+Gold Price date PO Date
+Line# Order # Vendor Style # Metal Color Size <-------Diamond-------> <-----Color Stone----> Due Date Order Price Amount Image
+Style Type Q uality Cut Shape Wt Type Shape Wt Qty
+101 D2839268/101JEO0311XX LGD-JEO0311XX-GW3 14KT W G/VS F/C EC 3.0000 Oct/13/2025 1.0 679.83 679.83
+Desc. 2EM=3CTS 1.60GM 14KW EARRING Class GM Min Wt 3.15 Max Wt 3.49
+Number: 05
+Diam Min Wt 2.970 Max Wt 3.020
+VPO Type 5 Day
+Cust. Dia. Quality GH/VS-SI
+Stamping Instruction Item Type S Spec Instruction
+2EM=3CT (3.00-3.02)
+14K UD LGD
+CNTR STONE IGI CERTIFIED & IGI# ENGRAV ON THE
+DIA. GIRDLE,
+IGI CERT. AND QR CODE TAG @ NJ,
+FACT. TO PROCURE THE GUARDIAN POST & BACK
+FROM W.R.COBB
+FACT. TO SHIP FINISHED WITH RHODIUM
+Total 1.0 679.83
+Other Amount
+Grand Total 1.0 679.83
+Page 2 of 6
+
+================================================================================
+END OF EXTRACTED TEXT

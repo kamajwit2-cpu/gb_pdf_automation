@@ -1,0 +1,48 @@
+EXTRACTED TEXT FROM: VPO# 2279543-FINISHED.pdf
+================================================================================
+
+Gold Price Date
+Unique Designs (Lab Grown)
+PURCHASE ORDER
+425 Meadowland Parkway,, 2nd Floor
+PO # : 2279543
+Secaucus, NJ07094
+Date : Oct/07/2025
+Tel: 212-840-9701 Fax: 212-490-1832 VPO : 2279543 - 190300933
+Date Oct/06/2025
+Purchase From : LG-K003
+Vendor # LG-K003
+RQ
+Gold Lock 3,949.45
+Kama Jewelry Pvt Ltd
+Vendor PO # 190300933
+Silver Lock 48.57
+Unit 2 601-604, Multistoreied Building
+Seepz-Sez Platinum Lock 1,620.00
+RL
+Customer # LG-M106
+Andheri, Mumbai MH 400096 Palladium Lock 1,286.00
+Gold Price date PO Date
+Line# Order # Vendor Style # Metal Color Size <-------Diamond-------> <-----Color Stone----> Due Date Order Price Amount Image
+Style Type Q uality Cut Shape Wt Type Shape Wt Qty
+101 D2839272/101JRZ7874 LG-JRZ7874-GW4-6.5 14KT W 66.5.500 G+/SI F/C RD 0.4600 Oct/13/2025 1.0 725.32 725.32
+Desc. 22RD=0.50CTS(1EM=2CT)4.37GM 14K W RING GM Min Wt 4.62 Max Wt 5.10 G/VS F/C EC 2.0000
+Class Number: 08
+Diam Min Wt 2.470 Max Wt 2.520
+VPO Type 5 Day
+Cust. Dia. Quality GH/VS1 - VS2
+Stamping Instruction Item Type S Spec Instruction
+STAMP 14K UD LGD, 22RD+1EM=2.50CTW (2.47-2.52)
+14K UD LGD
+CTR:1EM=2.00(1.97-2.00) SIDE(0.50-0.52)
+CNTR STONE IGI CERTIFIED & IGI# ENGRAV ON THE
+DIA. GIRDLE,
+IGI CERT & IGI QR CODE TAG @ NJ
+SET CNTR & FACT TO SHIP FINISHED WITH RHODIUM
+Total 1.0 725.32
+Other Amount
+Grand Total 1.0 725.32
+Page 6 of 6
+
+================================================================================
+END OF EXTRACTED TEXT

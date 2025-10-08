@@ -1,0 +1,46 @@
+EXTRACTED TEXT FROM: VPO# 2279541-FINISHED.pdf
+================================================================================
+
+Gold Price Date
+Unique Designs (Lab Grown)
+PURCHASE ORDER
+425 Meadowland Parkway,, 2nd Floor
+PO # : 2279541
+Secaucus, NJ07094
+Date : Oct/07/2025
+Tel: 212-840-9701 Fax: 212-490-1832 VPO : 2279541 - 190145591
+Date Oct/06/2025
+Purchase From : LG-K003
+Vendor # LG-K003
+RQ
+Gold Lock 3,949.45
+Kama Jewelry Pvt Ltd
+Vendor PO # 190145591
+Silver Lock 48.57
+Unit 2 601-604, Multistoreied Building
+Seepz-Sez Platinum Lock 1,620.00
+RL
+Customer # LG-M106
+Andheri, Mumbai MH 400096 Palladium Lock 1,286.00
+Gold Price date PO Date
+Line# Order # Vendor Style # Metal Color Size <-------Diamond-------> <-----Color Stone----> Due Date Order Price Amount Image
+Style Type Q uality Cut Shape Wt Type Shape Wt Qty
+101 D2839270/101JRO1323 LGD-JRO1323GY4-5.5 14KT Y 55.5.500 G/VS F/C RD 3.0000 Oct/13/2025 1.0 830.02 830.02
+Desc. 1RD=3CTS 4.18GM 14K Y RING Class Number: 07 GM Min Wt 4.54 Max Wt 5.02
+Diam Min Wt 3.000 Max Wt 3.020
+VPO Type 5 Day
+Cust. Dia. Quality H/VS2
+Stamping Instruction Item Type S Spec Instruction
+STAMP 14K UD LGD, CTR:1RD=3.00(3.00-3.02), CNTR
+14K UD LGD
+STONE IGI CERTIFIED & IGI# ENGRAV ON THE DIA.
+GIRDLE, IGI CERT. AND QR CODE TAG @ NJ, SET
+CNTR AND FACT TO SHIP FINISHED WITHOUT
+RHODIUM.
+Total 1.0 830.02
+Other Amount
+Grand Total 1.0 830.02
+Page 4 of 6
+
+================================================================================
+END OF EXTRACTED TEXT

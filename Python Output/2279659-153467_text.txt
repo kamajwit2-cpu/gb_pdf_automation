@@ -1,0 +1,45 @@
+EXTRACTED TEXT FROM: 2279659-153467.pdf
+================================================================================
+
+Gold Price Date
+Unique Designs (Lab Grown)
+PURCHASE ORDER
+425 Meadowland Parkway,, 2nd Floor
+PO # : 2279659
+Secaucus, NJ07094
+Date : Oct/07/2025
+Tel: 212-840-9701 Fax: 212-490-1832 VPO : 2279659 - 153467
+Date Oct/07/2025
+Purchase From : LG-K003
+Vendor # LG-K003 HQ
+Gold Lock 3,949.45
+Kama Jewelry Pvt Ltd
+Vendor PO # 153467
+Silver Lock 48.57
+Unit 2 601-604, Multistoreied Building
+Seepz-Sez Platinum Lock 1,620.00
+Customer # LG-G032 HL
+Andheri, Mumbai MH 400096 Palladium Lock 1,286.00
+Cust Name Grown Brilliance.com
+Gold Price date PO Date
+Line# Order # Vendor Style # Metal Color Size <------ Diamond --------> <----Color Stone-----> Due Date Order Price Amount Image
+Style Type Q uality Cut Shape Wt Type Shape Wt Qty
+101 E2839406/101KP0960M-WGGD LGD-KP0960-GW2 14KT W E-VS1 F/C RD 3.0000 Oct/10/2025 1.0 920.84 920.84
+Desc. 11RD=3.00CT 5.70GM 14K WG PENDANT GM Min Wt 8.77 Max Wt 9.69 Cust. Dia. Quality DE, VS1
+Diam Min Wt 2.950 Max Wt 3.000
+VPO Type 5 Day Engraving Text:*
+Stamping Instruction ItemType S
+Engraving Font:
+14K LGD GB
+Spec Instruction
+14KW 18inch Round Cable Chain 1.50 mm Width + Slider
+Bead + Oval Trigger Claps + Heart Tag,Rhodium Finish
+Piece Only,Total Dia Min 2.95 & Avg billable 3.00, Net Metal
+Weight Should Not Be More Than 5.70Gms
+Total 1.0 920.84
+Other Amount
+Grand Total 1.0 920.84
+Page 1 of 1
+
+================================================================================
+END OF EXTRACTED TEXT

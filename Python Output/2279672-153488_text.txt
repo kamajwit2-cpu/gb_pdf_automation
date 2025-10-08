@@ -1,0 +1,43 @@
+EXTRACTED TEXT FROM: 2279672-153488.pdf
+================================================================================
+
+Gold Price Date
+Unique Designs (Lab Grown)
+PURCHASE ORDER
+425 Meadowland Parkway,, 2nd Floor
+PO # : 2279672
+Secaucus, NJ07094
+Date : Oct/07/2025
+Tel: 212-840-9701 Fax: 212-490-1832 VPO : 2279672 - 153488
+Date Oct/07/2025
+Purchase From : LG-K003
+Vendor # LG-K003 HQ
+Gold Lock 3,949.45
+Kama Jewelry Pvt Ltd
+Vendor PO # 153488
+Silver Lock 48.57
+Unit 2 601-604, Multistoreied Building
+Seepz-Sez Platinum Lock 1,620.00
+Customer # LG-G032 HL
+Andheri, Mumbai MH 400096 Palladium Lock 1,286.00
+Cust Name Grown Brilliance.com
+Gold Price date PO Date
+Line# Order # Vendor Style # Metal Color Size <------ Diamond --------> <----Color Stone-----> Due Date Order Price Amount Image
+Style Type Q uality Cut Shape Wt Type Shape Wt Qty
+101 E2839440/101TXR03533-LGD LGD-TXR03533-GY4 14KT Y 6.00 F-VS2 F/C OV 1.0000 Oct/10/2025 1.0 292.50 292.50
+Desc. 11OV=1CT 1.82GM 14KY RING GM Min Wt 2.24 Max Wt 2.48 Cust. Dia. Quality F, VS2
+Diam Min Wt 0.950 Max Wt 1.000
+VPO Type 5 Day Engraving Text:*
+Stamping Instruction ItemType S
+Engraving Font:
+14K LGD GB
+Spec Instruction
+No Rhodium, Total Dia Min 0.95 & Avg billable 1.00, Net
+Metal Weight Should Not Be More Than 2.16Gms
+Total 1.0 292.50
+Other Amount
+Grand Total 1.0 292.50
+Page 1 of 1
+
+================================================================================
+END OF EXTRACTED TEXT

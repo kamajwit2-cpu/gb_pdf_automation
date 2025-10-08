@@ -1,0 +1,43 @@
+EXTRACTED TEXT FROM: 2279586-5962.pdf
+================================================================================
+
+Gold Price Date
+Unique Designs (Lab Grown)
+PURCHASE ORDER
+425 Meadowland Parkway,, 2nd Floor
+PO # : 2279586
+Secaucus, NJ07094
+Date : Oct/07/2025
+Tel: 212-840-9701 Fax: 212-490-1832 VPO : 2279586 - 5962
+Date Oct/07/2025
+Purchase From : LG-K003
+Vendor # LG-K003 HQ
+Gold Lock 3,949.45
+Kama Jewelry Pvt Ltd
+Vendor PO # 5962
+Silver Lock 48.57
+Unit 2 601-604, Multistoreied Building
+Seepz-Sez Platinum Lock 1,620.00
+Customer # LG-V028 HL
+Andheri, Mumbai MH 400096 Palladium Lock 1,286.00
+Cust Name VON Diamonds
+Gold Price date PO Date
+Line# Order # Vendor Style # Metal Color Size <------ Diamond --------> <----Color Stone-----> Due Date Order Price Amount Image
+Style Type Q uality Cut Shape Wt Type Shape Wt Qty
+101 2211253/101 R0329LADO01507254W R0329LADO01507254W 14KT W 7.25 G-SI EX OV 1.5000 Oct/10/2025 1.0 558.07 558.07
+Desc. 11(OV+RD)=1.68CT(OV=1.5CT)4.56GM 14KW RG GM Min Wt 4.66 Max Wt 5.15 G-SI F/C RD 0.1800 Cust. Dia. Quality G-SI
+Diam Min Wt 1.630 Max Wt 1.680
+VPO Type 5 Day
+Stamping Instruction ItemType S
+14K LGD VON LOGO
+Spec Instruction
+Rhodium Finish Piece Only, Cert Required, Total Dia Min
+1.63 & Avg billable 1.68,Net Metal Weight Should Not Be
+More Than 4.56Gms
+Total 1.0 558.07
+Other Amount
+Grand Total 1.0 558.07
+Page 1 of 1
+
+================================================================================
+END OF EXTRACTED TEXT
