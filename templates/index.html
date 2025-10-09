@@ -710,7 +710,7 @@
                                 <p class="text-muted">Choose the folder containing PDF files to extract data from</p>
                             </div>
 
-                            <form id="folderForm" class="needs-validation" novalidate>
+                            <div class="needs-validation" novalidate>
                                 <!-- Multi-file Upload (single control) -->
                                 <div class="mb-3">
                                     <label class="form-label">
@@ -727,24 +727,14 @@
                                     </div>
                                 </div>
 
-                                <!-- Recent Paths -->
-                                <div class="mb-4" id="recentPathsSection" style="display: none;">
-                                    <label class="form-label">
-                                        <i class="bi bi-clock-history me-1"></i>
-                                        Recent Paths
-                                    </label>
-                                    <div class="recent-paths border rounded p-2" id="recentPaths">
-                                        <!-- Recent paths will be populated here -->
-                                    </div>
-                                </div>
 
                                 <div class="text-center">
-                                    <button type="submit" class="btn btn-primary btn-lg" id="nextBtn" disabled>
+                                    <button type="button" class="btn btn-primary btn-lg" id="startProcessingBtn" style="display: none;">
                                         <i class="bi bi-arrow-right me-2"></i>
                                         Start Processing
                                     </button>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -965,7 +955,6 @@
                     stepContents: document.querySelectorAll('.step-content'),
                     
                     // Step 1 elements
-                    folderForm: document.getElementById('folderForm'),
                     // Upload controls (multi-file)
                     chooseFilesBtn: document.getElementById('chooseFilesBtn'),
                     pdfFiles: document.getElementById('pdfFiles'),
@@ -1193,7 +1182,9 @@
             }
 
             handleProcessingComplete(data) {
+                console.log('DEBUG: handleProcessingComplete called with data:', data);
                 this.processingData.rows = data.rows || [];
+                console.log('DEBUG: Set processingData.rows to:', this.processingData.rows);
                 
                 // Close SSE connection
                 if (this.eventSource) {
@@ -1251,6 +1242,8 @@
 
             renderTable() {
                 const { rows, statuses } = this.processingData;
+                console.log('DEBUG: renderTable called with rows:', rows);
+                console.log('DEBUG: renderTable called with statuses:', statuses);
                 const tbody = this.elements.dataTable.querySelector('tbody');
                 const thead = this.elements.dataTable.querySelector('thead tr');
                 
@@ -1452,12 +1445,16 @@
                     rows: []
                 };
                 
-                // Clear form
-                this.elements.folderPath.value = '';
-                this.elements.nextBtn.disabled = true;
+                // Clear file input
+                if (this.elements.pdfFiles) {
+                    this.elements.pdfFiles.value = '';
+                }
                 
-                // Clear validation
-                this.elements.pathValidation.className = 'validation-feedback';
+                // Close any existing SSE connection
+                if (this.eventSource) {
+                    this.eventSource.close();
+                    this.eventSource = null;
+                }
                 
                 // Go to step 1
                 this.goToStep(1);
@@ -1527,10 +1524,7 @@
                     item.className = 'recent-path-item';
                     item.textContent = path;
                     item.title = path;
-                    item.addEventListener('click', () => {
-                        this.elements.folderPath.value = path;
-                        this.validatePath();
-                    });
+                    // Recent paths functionality removed for file upload mode
                     this.elements.recentPaths.appendChild(item);
                 });
             }

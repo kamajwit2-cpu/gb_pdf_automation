@@ -120,7 +120,7 @@ def health():
 
 
 @app.post("/process")
-def process_folder():
+def process_entrypoint():
     # In production, support BOTH: uploaded files OR a server-reachable folder path
     is_production = os.getenv('ENV') == 'production'
 
@@ -147,6 +147,12 @@ def process_folder():
 
 def process_folder_path():
     """Process PDFs from a folder path (development mode)."""
+    # In development mode, also support file uploads
+    if 'files' in request.files:
+        files = request.files.getlist('files')
+        if files and any(f.filename for f in files):
+            return process_uploaded_files()
+    
     # Accept both JSON and form data for wizard compatibility
     if request.is_json:
         data = request.get_json(silent=True) or {}
@@ -216,27 +222,42 @@ def process_uploaded_files():
         progress_state["rows"] = []
         progress_state["running"] = True
 
-    # Start processing in background thread
-    t = threading.Thread(target=process_uploaded_files_worker, args=(valid_files,), daemon=True)
-    t.start()
+    # Save files immediately in main thread before starting background processing
+    temp_dir = tempfile.mkdtemp()
+    saved_files = []
+    
+    try:
+        for file in valid_files:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(temp_dir, filename)
+            file.save(file_path)
+            if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+                saved_files.append(file_path)
+                print(f"DEBUG: Successfully saved {filename} ({os.path.getsize(file_path)} bytes)")
+            else:
+                print(f"DEBUG: Failed to save {filename} - file doesn't exist or is empty")
+        
+        if not saved_files:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            return jsonify({"ok": False, "error": "No files could be saved for processing"}), 400
+        
+        # Start processing in background thread with saved file paths
+        t = threading.Thread(target=process_uploaded_files_worker, args=(saved_files, temp_dir), daemon=True)
+        t.start()
+        
+        return jsonify({"ok": True, "message": f"Processing {len(saved_files)} file(s)..."})
+        
+    except Exception as e:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        return jsonify({"ok": False, "error": f"Error saving files: {str(e)}"}), 400
 
-    return jsonify({"ok": True, "message": f"Processing {len(valid_files)} file(s)..."})
-
-def process_uploaded_files_worker(files):
+def process_uploaded_files_worker(saved_files, temp_dir):
     """Worker thread to process uploaded files."""
     try:
-        # Create temporary directory for uploaded files
-        temp_dir = tempfile.mkdtemp()
+        print(f"DEBUG: Starting to process {len(saved_files)} files")
+        print(f"DEBUG: Using temp directory: {temp_dir}")
         
         try:
-            # Save uploaded files to temp directory
-            saved_files = []
-            for file in files:
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(temp_dir, filename)
-                file.save(file_path)
-                saved_files.append(file_path)
-            
             # Process files using existing extractor logic
             extractor = FinalPDFExtractor(input_folder=temp_dir, output_folder="Python Output")
             all_rows: List[Dict[str, Any]] = []
@@ -244,7 +265,15 @@ def process_uploaded_files_worker(files):
             for file_path in saved_files:
                 filename = os.path.basename(file_path)
                 try:
+                    print(f"DEBUG: Processing file: {filename}")
+                    # Check if file is still readable
+                    if not os.path.exists(file_path):
+                        raise Exception(f"File {filename} no longer exists")
+                    if os.path.getsize(file_path) == 0:
+                        raise Exception(f"File {filename} is empty")
+                    
                     rows = extractor.extract_data_from_pdf(file_path)
+                    print(f"DEBUG: Extracted {len(rows)} rows from {filename}")
                     all_rows.extend(rows)
                     status = {
                         "file": filename,
@@ -265,6 +294,11 @@ def process_uploaded_files_worker(files):
                 global last_rows
                 last_rows = all_rows
 
+            print(f"DEBUG: Sending complete event with {len(all_rows)} total rows")
+            if all_rows:
+                print(f"DEBUG: Sample row: {all_rows[0]}")
+            else:
+                print("DEBUG: No rows extracted from any PDFs")
             event_queue.put(sse_format("complete", {"rows": all_rows}))
             with progress_lock:
                 progress_state["rows"] = all_rows
