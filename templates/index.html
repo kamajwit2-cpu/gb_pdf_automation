@@ -796,7 +796,7 @@
                                     <div class="mb-3">
                                         <small class="text-muted">Status:</small>
                                         <div class="fw-bold">
-                                            <span class="badge bg-warning" id="processingStatus">Starting...</span>
+                                            <span class="badge bg-warning" id="processingStatus"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -1022,11 +1022,11 @@
                     this.processingData.rows = [];
                     this.goToStep(2);
 
-                    // Initialize processing status
-                    console.log('DEBUG: Setting initial status to Starting...');
-                    this.elements.processingStatus.innerHTML = '<span class="badge bg-warning">Starting...</span>';
-                    this.elements.processingTitle.textContent = 'Starting Processing...';
-                    this.elements.processingSubtitle.textContent = 'Preparing to process PDFs...';
+                    // Initialize processing status - show Processing immediately since we're in step 2
+                    console.log('DEBUG: Setting status to Processing... (step 2 reached)');
+                    this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing... 0/' + files.length + '</span>';
+                    this.elements.processingTitle.textContent = 'Processing PDFs... (0/' + files.length + ')';
+                    this.elements.processingSubtitle.textContent = 'Extracting data from PDFs...';
 
                     // Start SSE connection
                     this.connectSSE();
@@ -1045,8 +1045,8 @@
                     
                     // Update status to show processing has started
                     console.log('DEBUG: Request sent successfully, updating status to Processing...');
-                    this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
-                    this.elements.processingTitle.textContent = 'Processing PDFs...';
+                    this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing... 0/' + files.length + '</span>';
+                    this.elements.processingTitle.textContent = 'Processing PDFs... (0/' + files.length + ')';
                     this.elements.processingSubtitle.textContent = 'Extracting data from PDFs...';
                 } catch (err) {
                     this.showToast(`Error: ${err.message}`, 'danger');
@@ -1112,9 +1112,11 @@
                             this.handleProcessingComplete({ rows: data.rows });
                         } else if (data.running) {
                             console.log('DEBUG: Processing is running, updating status to Processing...');
-                            // Update processing status to show it's running
-                            this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
-                            this.elements.processingTitle.textContent = 'Processing PDFs...';
+                            // Update processing status to show it's running with progress
+                            const processedCount = data.statuses ? data.statuses.length : 0;
+                            const totalCount = this.processingData.totalPdfs || 0;
+                            this.elements.processingStatus.innerHTML = `<span class="badge bg-info">Processing... ${processedCount}/${totalCount}</span>`;
+                            this.elements.processingTitle.textContent = `Processing PDFs... (${processedCount}/${totalCount})`;
                             
                             // Update statuses
                             data.statuses.forEach(status => {
@@ -1144,10 +1146,11 @@
                 this.updateStatusFeed(status);
                 this.updateCurrentFile(status.file);
                 
-                // Update processing status
-                console.log('DEBUG: Updating status to Processing...');
-                this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
-                this.elements.processingTitle.textContent = 'Processing PDFs...';
+                // Update processing status with progress
+                const { processedPdfs, totalPdfs } = this.processingData;
+                console.log('DEBUG: Updating status to Processing...', processedPdfs, '/', totalPdfs);
+                this.elements.processingStatus.innerHTML = `<span class="badge bg-info">Processing... ${processedPdfs}/${totalPdfs}</span>`;
+                this.elements.processingTitle.textContent = `Processing PDFs... (${processedPdfs}/${totalPdfs})`;
             }
 
             updateProgress() {
