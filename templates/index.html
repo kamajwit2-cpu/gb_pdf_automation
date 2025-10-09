@@ -993,8 +993,12 @@
                 
                 // Step 2 events (processing)
                 
-                // Step 3 events
-                this.elements.selectAll.addEventListener('change', (e) => this.toggleSelectAll(e.target.checked));
+                // Step 3 events - Use event delegation for dynamically created selectAll checkbox
+                document.addEventListener('change', (e) => {
+                    if (e.target && e.target.id === 'selectAll') {
+                        this.toggleSelectAll(e.target.checked);
+                    }
+                });
                 this.elements.addRowBtn.addEventListener('click', () => this.addRow());
                 this.elements.delRowBtn.addEventListener('click', () => this.deleteSelectedRows());
                 this.elements.clearFiltersBtn.addEventListener('click', () => this.clearFilters());
@@ -1334,6 +1338,7 @@
                     const selectCheckbox = document.createElement('input');
                     selectCheckbox.type = 'checkbox';
                     selectCheckbox.className = 'row-select';
+                    selectCheckbox.addEventListener('change', () => this.updateSelectAllState());
                     selectTd.appendChild(selectCheckbox);
                     tr.appendChild(selectTd);
                     
@@ -1358,6 +1363,31 @@
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = checked;
                 });
+                
+                // Update the selectAll checkbox state to match
+                const selectAllCheckbox = this.elements.dataTable.querySelector('#selectAll');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = checked;
+                }
+            }
+
+            updateSelectAllState() {
+                const checkboxes = this.elements.dataTable.querySelectorAll('.row-select');
+                const checkedBoxes = this.elements.dataTable.querySelectorAll('.row-select:checked');
+                const selectAllCheckbox = this.elements.dataTable.querySelector('#selectAll');
+                
+                if (selectAllCheckbox) {
+                    if (checkedBoxes.length === 0) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (checkedBoxes.length === checkboxes.length) {
+                        selectAllCheckbox.checked = true;
+                        selectAllCheckbox.indeterminate = false;
+                    } else {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = true;
+                    }
+                }
             }
 
             addRow() {
@@ -1371,6 +1401,7 @@
                 const selectCheckbox = document.createElement('input');
                 selectCheckbox.type = 'checkbox';
                 selectCheckbox.className = 'row-select';
+                selectCheckbox.addEventListener('change', () => this.updateSelectAllState());
                 selectTd.appendChild(selectCheckbox);
                 newRow.appendChild(selectTd);
                 
