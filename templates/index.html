@@ -499,27 +499,27 @@
             background: linear-gradient(135deg, var(--success-color), #146c43);
             color: white;
             border-radius: 0.5rem;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
+            padding: 0.5rem; /* reduced padding while keeping text size */
+            margin-bottom: 0.75rem; /* slightly tighter spacing below */
         }
 
         .summary-stat {
             text-align: center;
-            padding: 0.25rem;
+            padding: 0.125rem; /* reduced vertical padding */
         }
 
         .summary-stat .number {
             font-size: 1.25rem;
             font-weight: 700;
             display: block;
-            line-height: 1.2;
+            line-height: 1.05; /* tighter line-height, same font-size */
         }
 
         .summary-stat .label {
             font-size: 0.7rem;
             opacity: 0.9;
-            line-height: 1.1;
-            margin-top: 0.125rem;
+            line-height: 1.0; /* tighter line-height, same font-size */
+            margin-top: 0.05rem; /* reduced top margin */
         }
 
         /* Responsive summary adjustments */
@@ -1007,6 +1007,14 @@
                 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+                // Delegate filter input events (handles dynamic header rebuilds)
+                document.addEventListener('input', (e) => {
+                    const target = e.target;
+                    if (target && target.classList && target.classList.contains('column-filter')) {
+                        this.applyFilters();
+                    }
+                });
             }
 
             // Removed path-based flow; using multi-file upload only
@@ -1209,11 +1217,12 @@
                 
                 const now = new Date();
                 const duration = Math.floor((now - this.processingData.startTime) / 1000);
-                const minutes = Math.floor(duration / 60);
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
                 const seconds = duration % 60;
                 
                 this.elements.processingDuration.textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
 
             handleProcessingComplete(data) {
@@ -1265,14 +1274,15 @@
                 const { statuses, rows, startTime } = this.processingData;
                 const successful = statuses.filter(s => s.ok).length;
                 const duration = startTime ? Math.floor((new Date() - startTime) / 1000) : 0;
-                const minutes = Math.floor(duration / 60);
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
                 const seconds = duration % 60;
                 
                 this.elements.summaryPdfs.textContent = statuses.length;
                 this.elements.summaryRows.textContent = rows.length;
                 this.elements.summarySuccess.textContent = successful;
                 this.elements.summaryDuration.textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
 
             renderTable() {
@@ -1280,7 +1290,7 @@
                 console.log('DEBUG: renderTable called with rows:', rows);
                 console.log('DEBUG: renderTable called with statuses:', statuses);
                 const tbody = this.elements.dataTable.querySelector('tbody');
-                const thead = this.elements.dataTable.querySelector('thead tr');
+                const theadElement = this.elements.dataTable.querySelector('thead');
                 
                 // Show/hide failed PDFs section
                 const failedPdfs = statuses.filter(s => !s.ok);
@@ -1318,15 +1328,36 @@
                     return;
                 }
                 
-                // Clear and rebuild headers
-                thead.innerHTML = '<th style="width: 50px; min-width: 50px;"><input type="checkbox" id="selectAll" /></th>';
+                // Clear and rebuild headers (two rows: labels + filters)
+                theadElement.innerHTML = '';
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = '<th style="width: 50px; min-width: 50px;"><input type="checkbox" id="selectAll" /></th>';
                 const headers = Object.keys(rows[0]);
                 headers.forEach(header => {
                     const th = document.createElement('th');
                     th.textContent = header;
                     th.title = header;
-                    thead.appendChild(th);
+                    headerRow.appendChild(th);
                 });
+                theadElement.appendChild(headerRow);
+
+                // Filter inputs row
+                const filterRow = document.createElement('tr');
+                // Empty cell aligned with selectAll
+                const emptyTh = document.createElement('th');
+                emptyTh.innerHTML = '';
+                filterRow.appendChild(emptyTh);
+                headers.forEach((header, index) => {
+                    const th = document.createElement('th');
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = 'Filter';
+                    input.className = 'form-control form-control-sm column-filter';
+                    input.setAttribute('data-col-index', String(index));
+                    th.appendChild(input);
+                    filterRow.appendChild(th);
+                });
+                theadElement.appendChild(filterRow);
                 
                 // Clear and rebuild rows
                 tbody.innerHTML = '';
@@ -1369,6 +1400,27 @@
                 if (selectAllCheckbox) {
                     selectAllCheckbox.checked = checked;
                 }
+            }
+
+            applyFilters() {
+                const filterInputs = Array.from(this.elements.dataTable.querySelectorAll('thead .column-filter'));
+                const activeFilters = filterInputs.map(input => (input.value || '').trim().toLowerCase());
+                const rows = this.elements.dataTable.querySelectorAll('tbody tr');
+
+                rows.forEach(tr => {
+                    const cells = Array.from(tr.querySelectorAll('td.editable-cell'));
+                    let visible = true;
+                    for (let i = 0; i < activeFilters.length; i++) {
+                        const filterValue = activeFilters[i];
+                        if (!filterValue) continue;
+                        const cellText = (cells[i]?.textContent || '').trim().toLowerCase();
+                        if (!cellText.includes(filterValue)) {
+                            visible = false;
+                            break;
+                        }
+                    }
+                    tr.style.display = visible ? '' : 'none';
+                });
             }
 
             updateSelectAllState() {
@@ -1435,11 +1487,11 @@
             }
 
             clearFilters() {
-                // For native HTML table, this just ensures all rows are visible
+                // Clear inputs and show all rows
+                const inputs = this.elements.dataTable.querySelectorAll('thead .column-filter');
+                inputs.forEach(input => { input.value = ''; });
                 const rows = this.elements.dataTable.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    row.style.display = '';
-                });
+                rows.forEach(row => { row.style.display = ''; });
                 this.showToast('Filters cleared.', 'info');
             }
 
