@@ -1023,6 +1023,7 @@
                     this.goToStep(2);
 
                     // Initialize processing status
+                    console.log('DEBUG: Setting initial status to Starting...');
                     this.elements.processingStatus.innerHTML = '<span class="badge bg-warning">Starting...</span>';
                     this.elements.processingTitle.textContent = 'Starting Processing...';
                     this.elements.processingSubtitle.textContent = 'Preparing to process PDFs...';
@@ -1043,6 +1044,7 @@
                     this.showToast(`Uploading ${files.length} PDF(s). Processing started...`, 'success');
                     
                     // Update status to show processing has started
+                    console.log('DEBUG: Request sent successfully, updating status to Processing...');
                     this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
                     this.elements.processingTitle.textContent = 'Processing PDFs...';
                     this.elements.processingSubtitle.textContent = 'Extracting data from PDFs...';
@@ -1097,15 +1099,19 @@
             }
 
             startPolling() {
+                console.log('DEBUG: Starting polling fallback');
                 const pollInterval = setInterval(async () => {
                     try {
                         const response = await fetch('/progress');
                         const data = await response.json();
+                        console.log('DEBUG: Polling response:', data);
                         
                         if (!data.running && data.statuses.length > 0) {
+                            console.log('DEBUG: Processing complete, stopping polling');
                             clearInterval(pollInterval);
                             this.handleProcessingComplete({ rows: data.rows });
                         } else if (data.running) {
+                            console.log('DEBUG: Processing is running, updating status to Processing...');
                             // Update processing status to show it's running
                             this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
                             this.elements.processingTitle.textContent = 'Processing PDFs...';
@@ -1113,9 +1119,12 @@
                             // Update statuses
                             data.statuses.forEach(status => {
                                 if (!this.processingData.statuses.find(s => s.file === status.file)) {
+                                    console.log('DEBUG: Processing new status for file:', status.file);
                                     this.updatePDFStatus(status);
                                 }
                             });
+                        } else {
+                            console.log('DEBUG: No processing running, statuses:', data.statuses.length);
                         }
                     } catch (error) {
                         console.error('Polling error:', error);
