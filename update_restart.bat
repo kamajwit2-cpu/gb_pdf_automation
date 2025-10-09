@@ -14,12 +14,11 @@ echo GB PDF Automation - Update & Restart
 echo ========================================
 
 REM Kill existing server window by title (if any)
-for /f "tokens=2 delims==" %%I in ('wmic process where "name='cmd.exe' and CommandLine like '%%GB-PDF-Automation%%'" get ProcessId /value ^| find "ProcessId="') do (
-    echo Stopping existing server (PID %%I)...
+REM Try to stop any python/pythonw processes running serve.py (more reliable)
+for /f "tokens=2 delims==" %%I in ('wmic process where "(name='python.exe' or name='pythonw.exe') and CommandLine like '%%serve.py%%'" get ProcessId /value ^| find "ProcessId="') do (
+    echo Stopping existing python server (PID %%I)...
     taskkill /pid %%I /f >nul 2>&1
 )
-REM Also try to kill python by window title
-taskkill /f /fi "WINDOWTITLE eq GB-PDF-Automation" >nul 2>&1
 
 REM Git update
 echo Pulling latest code...
@@ -54,9 +53,23 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Relaunch server minimized via start_server.bat
-echo Restarting server...
-start "" /min cmd /c start_server.bat
+REM Relaunch server headless using pythonw when available (no window)
+echo Restarting server (headless)...
+set "PYEXE_W=%CD%\venv\Scripts\pythonw.exe"
+set "PYEXE_C=%CD%\venv\Scripts\python.exe"
+
+if exist "%PYEXE_W%" (
+    REM Use pythonw without window; redirect output to log via cmd /c
+    if not exist "logs" mkdir logs
+    start "" /b cmd /c ""%PYEXE_W%" serve.py >> "logs\server.log" 2>&1"
+) else if exist "%PYEXE_C%" (
+    REM Fallback: minimized console
+    if not exist "logs" mkdir logs
+    start "GB-PDF-Automation" /min "%PYEXE_C%" serve.py >> "logs\server.log" 2>&1
+) else (
+    echo ERROR: venv python not found; cannot restart server.
+    exit /b 1
+)
 
 echo Update complete. Exiting updater.
 endlocal

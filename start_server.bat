@@ -73,17 +73,20 @@ echo.
 REM Ensure logs directory exists
 if not exist "logs" mkdir logs
 
-REM Start server minimized in a new window using the venv python directly (no need to activate)
-REM Title used for controlled restarts: GB-PDF-Automation
-set "PYEXE=%CD%\venv\Scripts\python.exe"
-if not exist "%PYEXE%" (
-    echo ERROR: venv python not found at %PYEXE%
-    echo Aborting.
+REM Prefer pythonw.exe (no console) and fallback to python.exe minimized
+set "PYEXE_W=%CD%\venv\Scripts\pythonw.exe"
+set "PYEXE_C=%CD%\venv\Scripts\python.exe"
+
+if exist "%PYEXE_W%" (
+    REM Launch without visible window; redirect stdout/stderr to log via cmd /c
+    start "GB-PDF-Automation" /b cmd /c ""%PYEXE_W%" serve.py >> "logs\server.log" 2>&1"
+) else if exist "%PYEXE_C%" (
+    REM Launch minimized console and log output
+    start "GB-PDF-Automation" /min "%PYEXE_C%" serve.py >> "logs\server.log" 2>&1
+) else (
+    echo ERROR: venv python not found.
     exit /b 1
 )
-
-REM Launch server detached and minimized; redirect output to log
-start "GB-PDF-Automation" /min "%PYEXE%" serve.py >> "logs\server.log" 2>&1
 
 echo Server launched. You may close this window.
 endlocal
