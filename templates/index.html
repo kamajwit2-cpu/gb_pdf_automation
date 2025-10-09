@@ -1106,6 +1106,10 @@
                             clearInterval(pollInterval);
                             this.handleProcessingComplete({ rows: data.rows });
                         } else if (data.running) {
+                            // Update processing status to show it's running
+                            this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
+                            this.elements.processingTitle.textContent = 'Processing PDFs...';
+                            
                             // Update statuses
                             data.statuses.forEach(status => {
                                 if (!this.processingData.statuses.find(s => s.file === status.file)) {
@@ -1132,6 +1136,7 @@
                 this.updateCurrentFile(status.file);
                 
                 // Update processing status
+                console.log('DEBUG: Updating status to Processing...');
                 this.elements.processingStatus.innerHTML = '<span class="badge bg-info">Processing...</span>';
                 this.elements.processingTitle.textContent = 'Processing PDFs...';
             }
