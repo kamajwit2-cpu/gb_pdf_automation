@@ -62,20 +62,29 @@ set ENV=production
 REM Start the production server
 echo.
 echo ========================================
-echo Starting Production Server...
+echo Starting Production Server (detached)...
 echo ========================================
 echo Server will be available at: http://localhost:5002
 echo Server will be accessible from local network
-echo Press Ctrl+C to stop the server
+echo A minimized window will run in the background.
 echo ========================================
 echo.
 
-python serve.py
+REM Ensure logs directory exists
+if not exist "logs" mkdir logs
 
-REM If we get here, the server was stopped
-echo.
-echo ========================================
-echo Server stopped.
-echo ========================================
-pause
+REM Start server minimized in a new window using the venv python directly (no need to activate)
+REM Title used for controlled restarts: GB-PDF-Automation
+set "PYEXE=%CD%\venv\Scripts\python.exe"
+if not exist "%PYEXE%" (
+    echo ERROR: venv python not found at %PYEXE%
+    echo Aborting.
+    exit /b 1
+)
+
+REM Launch server detached and minimized; redirect output to log
+start "GB-PDF-Automation" /min "%PYEXE%" serve.py >> "logs\server.log" 2>&1
+
+echo Server launched. You may close this window.
 endlocal
+exit /b 0
