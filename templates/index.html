@@ -23,13 +23,15 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             margin: 0;
-            padding: 2rem 0;
+            padding: 1rem 0;
         }
 
         .wizard-container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
-            padding: 0 1rem;
+            padding: 0 0.25rem;
+            min-height: 100%;
+            display: flex;
         }
 
         .wizard-card {
@@ -38,6 +40,9 @@
             border-radius: 1rem;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
 
@@ -64,7 +69,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.5rem 1rem;
+            padding: 0.75rem 0.5rem;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-bottom: 1px solid #dee2e6;
             position: relative;
@@ -206,12 +211,12 @@
         }
 
         .wizard-content {
-            padding: 1.5rem;
+            padding: 0.75rem;
             min-height: 400px;
         }
 
         .card-header {
-            padding: 0.75rem 1rem;
+            padding: 0.375rem 0.5rem;
         }
 
         .card-header h5,
@@ -225,7 +230,7 @@
         }
 
         .card-body {
-            padding: 1rem;
+            padding: 0.5rem;
         }
 
         .step-content {
@@ -257,19 +262,19 @@
 
         .btn {
             border-radius: 0.375rem;
-            padding: 0.5rem 1rem;
+            padding: 0.25rem 0.5rem;
             font-weight: 500;
             font-size: 0.875rem;
             transition: all 0.3s ease;
         }
 
         .btn-lg {
-            padding: 0.625rem 1.25rem;
+            padding: 0.3125rem 0.625rem;
             font-size: 1rem;
         }
 
         .btn-sm {
-            padding: 0.375rem 0.75rem;
+            padding: 0.1875rem 0.375rem;
             font-size: 0.75rem;
         }
 
@@ -499,14 +504,29 @@
             background: linear-gradient(135deg, var(--success-color), #146c43);
             color: white;
             border-radius: 0.5rem;
-            padding: 0.5rem; /* reduced padding while keeping text size */
+            padding: 0.25rem; /* reduced padding while keeping text size */
             margin-bottom: 0.75rem; /* slightly tighter spacing below */
         }
 
         .summary-stat {
             text-align: center;
-            padding: 0.125rem; /* reduced vertical padding */
+            padding: 0.0625rem; /* reduced vertical padding */
         }
+
+        /* Compact inline summary for header */
+        .summary-inline {
+            background: linear-gradient(135deg, var(--success-color), #146c43);
+            color: white;
+            border-radius: 0.375rem;
+            padding: 0.125rem 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            white-space: nowrap;
+        }
+        .summary-inline .label { opacity: 0.9; }
+        .summary-inline .value { font-weight: 700; }
 
         .summary-stat .number {
             font-size: 1.25rem;
@@ -547,7 +567,7 @@
         }
 
         .recent-path-item {
-            padding: 0.5rem 0.75rem;
+            padding: 0.25rem 0.375rem;
             border-radius: 0.375rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
@@ -601,11 +621,11 @@
             }
             
             .wizard-content {
-                padding: 1rem;
+                padding: 0.5rem;
             }
             
             .step-indicator {
-                padding: 1rem 0.5rem;
+                padding: 0.5rem 0.25rem;
             }
             
             .step {
@@ -809,40 +829,8 @@
                 <div class="step-content" id="step3">
                     <!-- Combined Summary and Failed PDFs Section -->
                     <div class="row mb-3">
-                        <!-- Summary Section -->
-                        <div class="col-lg-8">
-                            <div class="summary-card">
-                                <div class="row text-center g-2">
-                                    <div class="col-3">
-                                        <div class="summary-stat">
-                                            <span class="number" id="summaryPdfs">0</span>
-                                            <span class="label">PDFs</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="summary-stat">
-                                            <span class="number" id="summaryRows">0</span>
-                                            <span class="label">Rows</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="summary-stat">
-                                            <span class="number" id="summarySuccess">0</span>
-                                            <span class="label">Success</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="summary-stat">
-                                            <span class="number" id="summaryDuration">00:00</span>
-                                            <span class="label">Time</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Failed PDFs Section -->
-                        <div class="col-lg-4">
+                        <div class="col-lg-12">
                             <div class="card h-100" id="failedPdfsCard" style="display: none;">
                                 <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="wizard.toggleFailedPdfs()">
                                     <h6 class="mb-0">
@@ -866,7 +854,19 @@
                                 <i class="bi bi-table me-2"></i>
                                 Extracted Data (Editable)
                             </h5>
+                            <div class="flex-fill text-center d-none d-md-block">
+                                <div class="summary-inline d-none d-md-inline-flex" id="summaryInline">
+                                    <span class="me-1"><span class="label">PDFs:</span> <span class="value" id="summaryPdfsInline">0</span></span>
+                                    <span class="me-1"><span class="label">Rows:</span> <span class="value" id="summaryRowsInline">0</span></span>
+                                    <span class="me-1"><span class="label">Success:</span> <span class="value" id="summarySuccessInline">0</span></span>
+                                    <span><span class="label">Time:</span> <span class="value" id="summaryDurationInline">00:00</span></span>
+                                </div>
+                            </div>
                             <div class="btn-group">
+                                <button type="button" class="btn btn-success btn-sm" id="exportBtn" disabled>
+                                    <i class="bi bi-download me-1"></i>
+                                    Export to Excel
+                                </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm" id="addRowBtn">
                                     <i class="bi bi-plus-circle me-1"></i>
                                     Add Row
@@ -906,11 +906,7 @@
                     </div>
 
                     <div class="text-center mt-4">
-                        <button type="button" class="btn btn-success btn-lg me-3" id="exportBtn" disabled>
-                            <i class="bi bi-download me-2"></i>
-                            Export to Excel
-                        </button>
-                        <button type="button" class="btn btn-outline-primary btn-lg" id="startNewBtn">
+                        <button type="button" class="btn btn-outline-primary btn-lg" id="startNewBtn" style="display: none;">
                             <i class="bi bi-arrow-clockwise me-2"></i>
                             Start New
                         </button>
@@ -975,6 +971,11 @@
                     summaryRows: document.getElementById('summaryRows'),
                     summarySuccess: document.getElementById('summarySuccess'),
                     summaryDuration: document.getElementById('summaryDuration'),
+                    // Inline summary mirrors (in header)
+                    summaryPdfsInline: document.getElementById('summaryPdfsInline'),
+                    summaryRowsInline: document.getElementById('summaryRowsInline'),
+                    summarySuccessInline: document.getElementById('summarySuccessInline'),
+                    summaryDurationInline: document.getElementById('summaryDurationInline'),
                     dataTable: document.getElementById('dataTable'),
                     selectAll: document.getElementById('selectAll'),
                     addRowBtn: document.getElementById('addRowBtn'),
@@ -1278,11 +1279,34 @@
                 const minutes = Math.floor((duration % 3600) / 60);
                 const seconds = duration % 60;
                 
-                this.elements.summaryPdfs.textContent = statuses.length;
-                this.elements.summaryRows.textContent = rows.length;
-                this.elements.summarySuccess.textContent = successful;
-                this.elements.summaryDuration.textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (this.elements.summaryPdfs) {
+                    this.elements.summaryPdfs.textContent = statuses.length;
+                }
+                if (this.elements.summaryRows) {
+                    this.elements.summaryRows.textContent = rows.length;
+                }
+                if (this.elements.summarySuccess) {
+                    this.elements.summarySuccess.textContent = successful;
+                }
+                if (this.elements.summaryDuration) {
+                    this.elements.summaryDuration.textContent = 
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                // Update inline summary if present
+                if (this.elements.summaryPdfsInline) {
+                    this.elements.summaryPdfsInline.textContent = statuses.length;
+                }
+                if (this.elements.summaryRowsInline) {
+                    this.elements.summaryRowsInline.textContent = rows.length;
+                }
+                if (this.elements.summarySuccessInline) {
+                    this.elements.summarySuccessInline.textContent = successful;
+                }
+                if (this.elements.summaryDurationInline) {
+                    this.elements.summaryDurationInline.textContent = 
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
             }
 
             renderTable() {

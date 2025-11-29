@@ -149,35 +149,96 @@ class FinalPDFExtractor:
         
         # Extract fields based on position
         # Handle different formats:
-        # Format 1: "101 2206492/101 TXE01899-WGGD LGD-TXE01899-GW4 14KT W"
+        # Format 1: "101 2223673/101 R6203 R6203LADE03006254W 14KT W"
         # Format 2: "101 E2831893/101LGR-RVR07619-WG4 LGR-RVR07619-WG4 14KT W"
+        # Note: Order number format is always XXXXX/XXX (has "/" followed by exactly 3 digits)
         
         order_number = parts[0] if len(parts) > 0 else ""
+        vendor_style = ""
+        kama_sku = ""
         
-        # Check if the second part contains both order number and SKU (no space)
-        # Handle "stuck together" pattern: "E2831893/101LGR-RVR07619-WG4 LGR-RVR07619-WG4"
-        if len(parts) > 2 and "/" in parts[1] and not parts[1].startswith("LGD") and not parts[1].startswith("LG") and not parts[1].startswith("LGR"):
-            # This is the combined format: "E2831893/101LGR-RVR07619-WG4"
-            combined = parts[1]
-            # Find where the SKU starts (usually after the last slash and number)
-            match = re.search(r'(.+?/\d+)(.+)', combined)
+        # Check if parts[0] contains order number + vendor style stuck together
+        # Pattern: "E2870159/102LTBR09965GY4-10-65" (order number + vendor style, no space)
+        if order_number and "/" in order_number:
+            # Check if order number pattern is followed by vendor style (no space after /XXX)
+            match = re.search(r'^(.+?/\d{3})(.+)$', order_number)
             if match:
-                order_number = match.group(1)  # "E2831893/101"
-                vendor_style = match.group(2)  # "LGR-RVR07619-WG4" (the SKU part stuck in parts[1])
-                kama_sku = parts[2]  # Use parts[2] as the actual SKU (clean version)
+                # parts[0] contains both order number and vendor style
+                order_number = match.group(1)  # "E2870159/102"
+                vendor_style = match.group(2)  # "LTBR09965GY4-10-65"
+                # Kama SKU should be in parts[1]
+                kama_sku = parts[1] if len(parts) > 1 else ""
+            elif re.match(r'^.+/\d{3}$', order_number):
+                # parts[0] is just the order number (normal format)
+                # Vendor style and SKU will be extracted below
+                pass
             else:
-                vendor_style = parts[1]
-                kama_sku = parts[2] if len(parts) > 2 else ""
-        else:
-            # Check if parts[1] looks like a SKU (contains letters and numbers, not just metal info)
-            if len(parts) > 1 and re.search(r'[A-Z]', parts[1]) and not re.match(r'^\d{2}KT$', parts[1]):
-                # parts[1] is the SKU, parts[2] is metal info
-                vendor_style = parts[1]
-                kama_sku = parts[1]  # SKU is in parts[1]
+                # parts[0] might have order number but format is different, keep as is
+                pass
+        
+        # If vendor_style and kama_sku not set yet, check other patterns
+        if not vendor_style or not kama_sku:
+            # Check if the second part contains both order number and SKU (no space)
+            # Handle "stuck together" pattern: "E2831893/101LGR-RVR07619-WG4 LGR-RVR07619-WG4"
+            # Order number format: XXXXX/XXX (3 digits after slash)
+            if len(parts) > 2 and "/" in parts[1] and not parts[1].startswith("LGD") and not parts[1].startswith("LG") and not parts[1].startswith("LGR"):
+                # This is the combined format: "E2831893/101LGR-RVR07619-WG4"
+                combined = parts[1]
+                # Find where the SKU starts (after the order number pattern: XXXXX/XXX)
+                match = re.search(r'(.+?/\d{3})(.+)', combined)
+                if match:
+                    order_number = match.group(1)  # "E2831893/101"
+                    vendor_style = match.group(2)  # "LGR-RVR07619-WG4" (the SKU part stuck in parts[1])
+                    kama_sku = parts[2]  # Use parts[2] as the actual SKU (clean version)
+                else:
+                    if not vendor_style:
+                        vendor_style = parts[1]
+                    if not kama_sku:
+                        kama_sku = parts[2] if len(parts) > 2 else ""
+        
+        # If vendor_style and kama_sku still not set, use normal format parsing
+        if not vendor_style or not kama_sku:
+            # Check if parts[2] is a size indicator (like "S-6.00", "S-7.25", etc.) or a decimal number
+            # If so, skip parts[2] and use parts[3] as Kama SKU
+            parts2_is_size_indicator = False
+            if len(parts) > 2:
+                # Check if parts[2] starts with "S-" followed by a number, or is a decimal number
+                if re.match(r'^S-[\d.]+$', parts[2]) or re.match(r'^[\d.]+$', parts[2]):
+                    parts2_is_size_indicator = True
+            
+            if parts2_is_size_indicator and len(parts) > 3:
+                # parts[2] is a size indicator, skip it and use parts[3] as Kama SKU
+                if not vendor_style:
+                    vendor_style = parts[1] if len(parts) > 1 else ""
+                if not kama_sku:
+                    kama_sku = parts[3]
+            elif len(parts) > 2 and len(parts[2]) > len(parts[1]) and re.search(r'[A-Z]', parts[2]):
+                # Normal format: parts[1] is vendor style, parts[2] is Kama SKU
+                if not vendor_style:
+                    vendor_style = parts[1] if len(parts) > 1 else ""
+                if not kama_sku:
+                    kama_sku = parts[2]
+            elif len(parts) > 1 and re.search(r'[A-Z]', parts[1]) and not re.match(r'^\d{2}KT$', parts[1]):
+                # Fallback: parts[1] might be the SKU if parts[2] doesn't exist or is metal info
+                # Check if parts[2] looks like metal info (KT, PLAT, etc.) or is missing
+                if len(parts) <= 2 or re.match(r'^\d{2}KT|PLAT|SILV|STER$', parts[2]):
+                    # parts[1] is the SKU, no separate vendor style
+                    if not vendor_style:
+                        vendor_style = parts[1]
+                    if not kama_sku:
+                        kama_sku = parts[1]
+                else:
+                    # Normal format: parts[1] is vendor style, parts[2] is SKU
+                    if not vendor_style:
+                        vendor_style = parts[1] if len(parts) > 1 else ""
+                    if not kama_sku:
+                        kama_sku = parts[2] if len(parts) > 2 else ""
             else:
                 # Normal format: use parts[1] as vendor style and parts[2] as SKU
-                vendor_style = parts[1] if len(parts) > 1 else ""
-                kama_sku = parts[2] if len(parts) > 2 else ""
+                if not vendor_style:
+                    vendor_style = parts[1] if len(parts) > 1 else ""
+                if not kama_sku:
+                    kama_sku = parts[2] if len(parts) > 2 else ""
         
         # Validate that we have a Kama SKU (any pattern is acceptable)
         if not kama_sku or len(kama_sku) < 3:
@@ -192,29 +253,113 @@ class FinalPDFExtractor:
         metal_kt = ""
         metal_color = ""
         size = ""
+        metal_kt_index = -1
+        metal_color_index = -1
         
         # Look for metal patterns in all parts
         for i, part in enumerate(parts):
             if re.match(r"\d{2}KT|PLAT|SILV|STER", part):
                 metal_kt = part
+                metal_kt_index = i
                 if i + 1 < len(parts):
                     metal_color = parts[i + 1]
+                    metal_color_index = i + 1
                 break
         
+        # Find size - usually comes after Metal Color and before Diamond Quality
+        # But can also come before Metal Color (like S-6.00)
+        # Helper function to extract and normalize size value
+        def extract_size_value(value_str):
+            """Extract size from value, handling double dots and multiple zeros."""
+            if '.' in value_str:
+                # Handle cases with double dots: 66.0.000 -> take first decimal part
+                if value_str.count('.') > 1:
+                    parts_split = value_str.split('.')
+                    if len(parts_split) >= 2:
+                        normalized = f"{parts_split[0]}.{parts_split[1]}"
+                        try:
+                            return f"{float(normalized):.2f}"
+                        except ValueError:
+                            return normalized
+                else:
+                    # Normal single decimal case
+                    try:
+                        return f"{float(value_str):.2f}"
+                    except ValueError:
+                        return value_str
+            else:
+                # Integer number (no decimal)
+                return value_str
         
-        # Find size - look for decimal numbers in the line (like 1.0000, 7.25, etc.)
-        for part in parts:
-            size_match = re.match(r"^(\d+(?:\.\d+)?)$", part)
-            if size_match:
-                size = f"{float(size_match.group(1)):.2f}"
-                break
+        # Priority 1: Search after Metal Color and before Diamond Quality
+        if metal_color_index >= 0:
+            # Start searching after metal color
+            for i in range(metal_color_index + 1, len(parts)):
+                part = parts[i]
+                # Check if this part looks like diamond quality prefix (EF, F, E, D, etc. - 1-2 letters)
+                if re.match(r"^[A-Z]{1,2}$", part) and part not in ["W", "Y", "PLAT", "SILV", "STER", "RD", "EX"]:
+                    # Check if next part looks like a quality grade
+                    if i + 1 < len(parts):
+                        next_part = parts[i + 1]
+                        if re.match(r"[A-Z0-9]+\+[A-Z]+|[A-Z]+[-/][A-Z0-9]+", next_part, re.IGNORECASE):
+                            # We've reached diamond quality, stop searching for size
+                            break
+                # Check if this part looks like diamond quality grade (VS2+EX, F-VS2, etc.)
+                if re.match(r"[A-Z0-9]+\+[A-Z]+|[A-Z]+[-/][A-Z0-9]+", part, re.IGNORECASE):
+                    # We've reached diamond quality, stop searching for size
+                    break
+                
+                # Check for size indicator pattern: S-6.00, S-7.25, etc.
+                size_indicator_match = re.match(r"^S-([\d.]+)$", part)
+                if size_indicator_match:
+                    size_value = size_indicator_match.group(1)
+                    size = extract_size_value(size_value)
+                    break
+                
+                # Check if this part is a decimal number (size)
+                size_match = re.match(r"^(\d+(?:\.\d+)*)$", part)
+                if size_match:
+                    size = extract_size_value(size_match.group(1))
+                    break
         
-        # Find diamond quality (pattern like F-VS2, E-VS1, D/VVS EX, etc.)
+        # Priority 2: If size not found after Metal Color, check before Metal Color for S- patterns
+        if not size and metal_kt_index >= 0:
+            # Search backwards from Metal KT to find S- patterns
+            for i in range(metal_kt_index - 1, -1, -1):
+                part = parts[i]
+                # Check for size indicator pattern: S-6.00, S-7.25, etc.
+                size_indicator_match = re.match(r"^S-([\d.]+)$", part)
+                if size_indicator_match:
+                    size_value = size_indicator_match.group(1)
+                    size = extract_size_value(size_value)
+                    break
+        
+        # Find diamond quality (pattern like F-VS2, E-VS1, D/VVS EX, EF VS2+EX, VS2+EX, etc.)
         dia_quality = ""
-        for part in parts:
+        # Look for diamond quality after metal color
+        start_search = metal_color_index + 1 if metal_color_index >= 0 else 0
+        
+        for i in range(start_search, len(parts)):
+            part = parts[i]
+            # Pattern 1: Single part with dash/slash (F-VS2, E-VS1, D/VVS)
             if re.match(r"[A-Z][+-]?[-/][A-Z0-9]+", part):
                 dia_quality = part
                 break
+            # Pattern 2: Quality with + sign (VS2+EX, SI1+EX, etc.)
+            elif re.match(r"[A-Z0-9]+\+[A-Z]+", part, re.IGNORECASE):
+                # Check if previous part is a quality prefix (like EF, F, E, D, etc.)
+                if i > 0 and re.match(r"^[A-Z]{1,2}$", parts[i-1]) and parts[i-1] not in ["W", "Y", "PLAT", "SILV", "STER"]:
+                    dia_quality = f"{parts[i-1]} {part}"
+                else:
+                    dia_quality = part
+                break
+            # Pattern 3: Two-part quality (EF VS2+EX, F VS2, etc.)
+            elif i + 1 < len(parts) and re.match(r"^[A-Z]{1,2}$", part) and part not in ["W", "Y", "PLAT", "SILV", "STER"]:
+                next_part = parts[i + 1]
+                # Check if next part looks like a quality grade
+                if re.match(r"[A-Z0-9]+\+[A-Z]+|[A-Z]+[-/][A-Z0-9]+", next_part, re.IGNORECASE):
+                    dia_quality = f"{part} {next_part}"
+                    break
         
         # Extract product category from SKU patterns
         category = ""
