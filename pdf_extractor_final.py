@@ -409,10 +409,21 @@ class FinalPDFExtractor:
         qty = ""
         
         for i, part in enumerate(parts):
-            if re.match(r"\w{3}/\d{2}/\d{4}", part):
+            # Match date patterns: Nov/28/2025, DEC/2/2025, Dec/04/2025 (1 or 2 digit day)
+            date_match = re.match(r"(\w{3})/(\d{1,2})/(\d{4})", part, re.IGNORECASE)
+            if date_match:
+                month_str = date_match.group(1)
+                day_str = date_match.group(2)
+                year_str = date_match.group(3)
+                
+                # Try to parse the date
                 try:
-                    ship_date = datetime.strptime(part, "%b/%d/%Y").strftime("%d-%m-%Y")
+                    # Normalize day to 2 digits for parsing
+                    day_normalized = day_str.zfill(2)
+                    date_str = f"{month_str}/{day_normalized}/{year_str}"
+                    ship_date = datetime.strptime(date_str, "%b/%d/%Y").strftime("%d-%m-%Y")
                 except ValueError:
+                    # If parsing fails, use the original format
                     ship_date = part
                 
                 # Quantity is usually the next part

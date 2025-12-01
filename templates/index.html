@@ -49,27 +49,27 @@
         .wizard-header {
             background: linear-gradient(135deg, var(--primary-color), #0056b3);
             color: white;
-            padding: 1rem;
+            padding: 0.5rem;
             text-align: center;
         }
 
         .wizard-title {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 600;
             margin: 0;
         }
 
         .wizard-subtitle {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             opacity: 0.9;
-            margin: 0.25rem 0 0 0;
+            margin: 0.15rem 0 0 0;
         }
 
         .step-indicator {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0.75rem 0.5rem;
+            padding: 0.5rem 0.25rem;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-bottom: 1px solid #dee2e6;
             position: relative;
@@ -90,18 +90,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0 2rem;
+            margin: 0 1rem;
             position: relative;
-            min-width: 120px;
+            min-width: 80px;
         }
 
         .step:not(:last-child)::after {
             content: '';
             position: absolute;
-            right: -2rem;
-            top: 1.5rem;
-            width: 4rem;
-            height: 3px;
+            right: -1rem;
+            top: 1rem;
+            width: 2rem;
+            height: 2px;
             background: linear-gradient(90deg, #dee2e6 0%, #e9ecef 100%);
             border-radius: 2px;
             z-index: 1;
@@ -118,8 +118,8 @@
         }
 
         .step-number {
-            width: 3rem;
-            height: 3rem;
+            width: 2rem;
+            height: 2rem;
             border-radius: 50%;
             background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
             color: #6c757d;
@@ -127,10 +127,10 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
             transition: all 0.4s ease;
-            border: 3px solid transparent;
+            border: 2px solid transparent;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             position: relative;
             z-index: 2;
@@ -167,17 +167,17 @@
         .step.completed .step-number::after {
             content: '✓';
             position: absolute;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 900;
         }
 
         .step-label {
             font-weight: 600;
             color: #6c757d;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             text-align: center;
             transition: all 0.3s ease;
-            margin-top: 0.25rem;
+            margin-top: 0.15rem;
         }
 
         .step.active .step-label {
@@ -192,10 +192,10 @@
         }
 
         .step-description {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #6c757d;
             text-align: center;
-            margin-top: 0.25rem;
+            margin-top: 0.15rem;
             opacity: 0.8;
             transition: all 0.3s ease;
         }
@@ -439,27 +439,50 @@
             border-bottom: 2px solid #dee2e6;
             font-weight: 600;
             color: #495057;
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
 
-        .table th:first-child {
+        /* First header row (column names) - sticky at top */
+        .table thead tr:first-child th {
+            position: sticky;
+            top: 0;
+            z-index: 12;
+            background: var(--light-bg);
+        }
+
+        /* Filter row (second header row) - sticky below first row */
+        .table thead tr.filter-row th {
+            position: sticky;
+            top: var(--header-row-height, 40px);
+            z-index: 11;
+            background: var(--light-bg);
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* First column in header rows - sticky on both axes */
+        .table thead tr:first-child th:first-child {
             position: sticky;
             left: 0;
-            z-index: 11;
+            z-index: 13;
+            background: var(--light-bg);
+        }
+
+        .table thead tr.filter-row th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 12;
             background: var(--light-bg);
         }
 
         .table td:first-child {
             position: sticky;
             left: 0;
-            z-index: 9;
+            z-index: 8;
             background: white;
         }
 
         .table tbody tr:hover td:first-child {
             background: #f8f9fa;
+            z-index: 8;
         }
 
         .table tbody tr:hover {
@@ -634,22 +657,23 @@
             }
             
             .step:not(:last-child)::after {
-                right: -1.5rem;
+                right: -1rem;
                 width: 1.5rem;
+                top: 1rem;
             }
             
             .step-number {
-                width: 2.5rem;
-                height: 2.5rem;
-                font-size: 1rem;
+                width: 1.75rem;
+                height: 1.75rem;
+                font-size: 0.8rem;
             }
             
             .step-label {
-                font-size: 0.75rem;
+                font-size: 0.7rem;
             }
             
             .step-description {
-                font-size: 0.65rem;
+                font-size: 0.6rem;
             }
         }
 
@@ -662,16 +686,17 @@
             .step:not(:last-child)::after {
                 right: -1rem;
                 width: 1rem;
+                top: 1rem;
             }
             
             .step-number {
-                width: 2rem;
-                height: 2rem;
-                font-size: 0.875rem;
+                width: 1.5rem;
+                height: 1.5rem;
+                font-size: 0.75rem;
             }
             
             .step-label {
-                font-size: 0.7rem;
+                font-size: 0.65rem;
             }
             
             .step-description {
@@ -849,7 +874,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h5 class="mb-0">
                                 <i class="bi bi-table me-2"></i>
                                 Extracted Data (Editable)
@@ -863,6 +888,10 @@
                                 </div>
                             </div>
                             <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-sm" id="startNewBtnHeader" style="display: none;">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>
+                                    Start New Extraction
+                                </button>
                                 <button type="button" class="btn btn-success btn-sm" id="exportBtn" disabled>
                                     <i class="bi bi-download me-1"></i>
                                     Export to Excel
@@ -903,13 +932,6 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <button type="button" class="btn btn-outline-primary btn-lg" id="startNewBtn" style="display: none;">
-                            <i class="bi bi-arrow-clockwise me-2"></i>
-                            Start New
-                        </button>
                     </div>
                 </div>
             </div>
@@ -982,7 +1004,7 @@
                     delRowBtn: document.getElementById('delRowBtn'),
                     clearFiltersBtn: document.getElementById('clearFiltersBtn'),
                     exportBtn: document.getElementById('exportBtn'),
-                    startNewBtn: document.getElementById('startNewBtn')
+                    startNewBtnHeader: document.getElementById('startNewBtnHeader')
                 };
             }
 
@@ -1004,7 +1026,7 @@
                 this.elements.delRowBtn.addEventListener('click', () => this.deleteSelectedRows());
                 this.elements.clearFiltersBtn.addEventListener('click', () => this.clearFilters());
                 this.elements.exportBtn.addEventListener('click', () => this.exportToExcel());
-                this.elements.startNewBtn.addEventListener('click', () => this.startNew());
+                this.elements.startNewBtnHeader.addEventListener('click', () => this.startNew());
                 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -1028,6 +1050,11 @@
                 }
 
                 try {
+                    // Hide "Start New" button when starting new processing
+                    if (this.elements.startNewBtnHeader) {
+                        this.elements.startNewBtnHeader.style.display = 'none';
+                    }
+                    
                     this.processingData.startTime = new Date();
                     this.processingData.totalPdfs = files.length;
                     this.processingData.processedPdfs = 0;
@@ -1258,6 +1285,11 @@
                 // Render table
                 this.renderTable();
                 
+                // Show "Start New" button
+                if (this.elements.startNewBtnHeader) {
+                    this.elements.startNewBtnHeader.style.display = 'inline-block';
+                }
+                
                 // Go to results step
                 setTimeout(() => {
                     this.goToStep(3);
@@ -1367,6 +1399,7 @@
 
                 // Filter inputs row
                 const filterRow = document.createElement('tr');
+                filterRow.className = 'filter-row';
                 // Empty cell aligned with selectAll
                 const emptyTh = document.createElement('th');
                 emptyTh.innerHTML = '';
@@ -1382,6 +1415,18 @@
                     filterRow.appendChild(th);
                 });
                 theadElement.appendChild(filterRow);
+                
+                // Set the top position for filter row based on header row height
+                // Use requestAnimationFrame to ensure calculation happens after rendering
+                requestAnimationFrame(() => {
+                    const firstHeaderRow = theadElement.querySelector('tr:first-child');
+                    if (firstHeaderRow) {
+                        const headerHeight = firstHeaderRow.offsetHeight;
+                        filterRow.style.setProperty('--header-row-height', headerHeight + 'px');
+                        // Also set it on the table element for consistency
+                        this.elements.dataTable.style.setProperty('--header-row-height', headerHeight + 'px');
+                    }
+                });
                 
                 // Clear and rebuild rows
                 tbody.innerHTML = '';
@@ -1536,11 +1581,31 @@
                         throw new Error(error.error || 'Export failed');
                     }
                     
+                    // Get filename from Content-Disposition header or generate it
+                    let filename = 'GB PDF Extraction.xlsx';
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (filenameMatch && filenameMatch[1]) {
+                            filename = filenameMatch[1].replace(/['"]/g, '');
+                        }
+                    } else {
+                        // Generate filename with timestamp if header not available
+                        const now = new Date();
+                        const timestamp = now.getFullYear().toString() +
+                            (now.getMonth() + 1).toString().padStart(2, '0') +
+                            now.getDate().toString().padStart(2, '0') + '_' +
+                            now.getHours().toString().padStart(2, '0') +
+                            now.getMinutes().toString().padStart(2, '0') +
+                            now.getSeconds().toString().padStart(2, '0');
+                        filename = `GB PDF Extraction ${timestamp}.xlsx`;
+                    }
+                    
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'extracted_data.xlsx';
+                    a.download = filename;
                     a.click();
                     window.URL.revokeObjectURL(url);
                     
@@ -1587,6 +1652,27 @@
                 if (this.elements.pdfFiles) {
                     this.elements.pdfFiles.value = '';
                 }
+                
+                // Hide "Start New" button
+                if (this.elements.startNewBtnHeader) {
+                    this.elements.startNewBtnHeader.style.display = 'none';
+                }
+                
+                // Clear the table
+                const tbody = this.elements.dataTable.querySelector('tbody');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="20" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox me-2"></i>
+                                No data to display. Complete processing to see results.
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // Reset export button
+                this.elements.exportBtn.disabled = true;
                 
                 // Close any existing SSE connection
                 if (this.eventSource) {

@@ -435,7 +435,7 @@ def export_excel():
         output.seek(0)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"edited_data_{timestamp}.xlsx"
+        filename = f"GB PDF Extraction {timestamp}.xlsx"
         return send_file(output, as_attachment=True, download_name=filename, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     except Exception as e:  # pragma: no cover - defensive
         return jsonify({"ok": False, "error": str(e)}), 500
